@@ -41,9 +41,9 @@ final class _ObjCWebim: NSObject {
     }
     
     @objc(parseRemoteNotification:)
-    static func parse(remoteNotification: [AnyHashable: Any]) -> _ObjCWebimPushNotification? {
-        if let webimPushNotification = try? Webim.parse(remoteNotification: remoteNotification) {
-            return _ObjCWebimPushNotification(webimPushNotification: webimPushNotification!)
+    static func parse(remoteNotification: [AnyHashable: Any]) -> _ObjCWebimRemoteNotification? {
+        if let webimRemoteNotification = try? Webim.parse(remoteNotification: remoteNotification) {
+            return _ObjCWebimRemoteNotification(webimRemoteNotification: webimRemoteNotification!)
         } else {
             return nil
         }
@@ -55,9 +55,9 @@ final class _ObjCWebim: NSObject {
     }
     
     
-    // MARK: - PushNotificationSystem
-    @objc(PushNotificationSystem)
-    enum _ObjCPushNotificationSystem: Int {
+    // MARK: - RemoteNotificationSystem
+    @objc(RemoteNotificationSystem)
+    enum _ObjCRemoteNotificationSystem: Int {
         case APNS
         case NONE
     }
@@ -122,16 +122,16 @@ final class _ObjCSessionBuilder: NSObject {
         return self
     }
     
-    @objc(setPushNotificationSystem:)
-    func set(pushNotificationSystem: _ObjCWebim._ObjCPushNotificationSystem) -> _ObjCSessionBuilder {
-        var webimPushNotificationSystem: Webim.PushNotificationSystem?
-        switch pushNotificationSystem {
+    @objc(setRemoteNotificationSystem:)
+    func set(remoteNotificationSystem: _ObjCWebim._ObjCRemoteNotificationSystem) -> _ObjCSessionBuilder {
+        var webimRemoteNotificationSystem: Webim.RemoteNotificationSystem?
+        switch remoteNotificationSystem {
         case .APNS:
-            webimPushNotificationSystem = Webim.PushNotificationSystem.APNS
+            webimRemoteNotificationSystem = .APNS
         default:
-            webimPushNotificationSystem = Webim.PushNotificationSystem.NONE
+            webimRemoteNotificationSystem = .NONE
         }
-        sessionBuilder = sessionBuilder.set(pushNotificationSystem: webimPushNotificationSystem!)
+        sessionBuilder = sessionBuilder.set(remoteNotificationSystem: webimRemoteNotificationSystem!)
         
         return self
     }

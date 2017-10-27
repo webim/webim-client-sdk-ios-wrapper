@@ -1,6 +1,6 @@
 {
   "name": "WebimClientLibrary",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "summary": "Webim.ru client SDK for iOS.",
   "homepage": "https://webim.ru/integration/mobile-sdk/ios-sdk-howto/",
   "license": {
@@ -12,24 +12,12 @@
   },
   "source": {
     "git": "https://github.com/webim/webim-client-sdk-ios.git",
-    "tag": "3.0.0"
+    "tag": "3.0.1"
   },
   "platforms": {
     "ios": "8.0"
   },
   "source_files": "WebimClientLibrary/**/*",
-  "public_header_files": [
-    "FatalErrorHandler.swift",
-    "Message.swift",
-    "MessageListener.swift",
-    "MessageStream.swift",
-    "MessageTracker.swift",
-    "Operator.swift",
-    "Webim.swift",
-    "WebimError.swift",
-    "WebimPushNotification.swift",
-    "WebimSession.swift"
-  ],
   "frameworks": "Foundation",
   "dependencies": {
     "SQLite.swift": [

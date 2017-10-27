@@ -1,5 +1,5 @@
 //
-//  WebimPushNotification.swift
+//  WebimRemoteNotification.swift
 //  WebimClientLibraryWrapper
 //
 //  Created by Nikita Lazarev-Zubov on 26.10.17.
@@ -29,17 +29,17 @@ import Foundation
 import WebimClientLibrary
 
 
-// MARK: - WebimPushNotification
-@objc(WebimPushNotification)
-final class _ObjCWebimPushNotification: NSObject {
+// MARK: - WebimRemoteNotification
+@objc(WebimRemoteNotification)
+final class _ObjCWebimRemoteNotification: NSObject {
     
     // MARK: - Properties
-    private (set) var webimPushNotification: WebimPushNotification
+    private (set) var webimRemoteNotification: WebimRemoteNotification
     
     
     // MARK: - Initialization
-    init(webimPushNotification: WebimPushNotification) {
-        self.webimPushNotification = webimPushNotification
+    init(webimRemoteNotification: WebimRemoteNotification) {
+        self.webimRemoteNotification = webimRemoteNotification
     }
     
     
@@ -47,7 +47,7 @@ final class _ObjCWebimPushNotification: NSObject {
     
     @objc(getType)
     func getType() -> _ObjCNotificationType {
-        switch webimPushNotification.getType() {
+        switch webimRemoteNotification.getType() {
         case .OPERATOR_ACCEPTED:
             return .OPERATOR_ACCEPTED
         case .OPERATOR_FILE:
@@ -59,7 +59,7 @@ final class _ObjCWebimPushNotification: NSObject {
     
     @objc(getEvent)
     func getEvent() -> _ObjCNotificationEvent {
-        switch webimPushNotification.getEvent() {
+        switch webimRemoteNotification.getEvent() {
         case .ADD:
             return .ADD
         case .DELETE:
@@ -69,7 +69,7 @@ final class _ObjCWebimPushNotification: NSObject {
     
     @objc(getParameters)
     func getParameters() -> [String] {
-        return webimPushNotification.getParameters()
+        return webimRemoteNotification.getParameters()
     }
     
 }

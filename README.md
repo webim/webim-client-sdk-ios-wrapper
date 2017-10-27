@@ -15,7 +15,7 @@ Then just copy ten .swift-files from **WebimClientLibraryWrapper** directory to 
 * **Operator.swift**,
 * **Webim.swift**,
 * **WebimError.swift**,
-* **WebimPushNotification.swift**,
+* **WebimRemoteNotification.swift**,
 * **WebimSession.swift**.
 
 If your project doesn't contain any .swift-files yet Xcode (or another IDE you use) may offer to create a bridging header file. Do not hesitate to agree.

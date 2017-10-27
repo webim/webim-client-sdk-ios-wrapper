@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CE03FC1F1FA21820008AFAC1 /* WebimPushNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE03FC1E1FA21820008AFAC1 /* WebimPushNotification.swift */; };
+		CE03FC1F1FA21820008AFAC1 /* WebimRemoteNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE03FC1E1FA21820008AFAC1 /* WebimRemoteNotification.swift */; };
 		CE67FB1B1FA22231007117B4 /* FatalErrorHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE67FB1A1FA22231007117B4 /* FatalErrorHandler.swift */; };
 		CE67FB1D1FA22454007117B4 /* WebimError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE67FB1C1FA22454007117B4 /* WebimError.swift */; };
 		CE67FB1F1FA22FC0007117B4 /* MessageStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE67FB1E1FA22FC0007117B4 /* MessageStream.swift */; };
@@ -33,7 +33,7 @@
 		7CB99982D2061FFDFD5C5112 /* Pods-ObjectiveCExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectiveCExample.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ObjectiveCExample/Pods-ObjectiveCExample.debug.xcconfig"; sourceTree = "<group>"; };
 		8957D0C29EA2022FBCC7C1FD /* Pods_ObjectiveCExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ObjectiveCExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D2F704C2F5EB93B75C8239 /* Pods-ObjectiveCExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectiveCExample.release.xcconfig"; path = "Pods/Target Support Files/Pods-ObjectiveCExample/Pods-ObjectiveCExample.release.xcconfig"; sourceTree = "<group>"; };
-		CE03FC1E1FA21820008AFAC1 /* WebimPushNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebimPushNotification.swift; sourceTree = "<group>"; };
+		CE03FC1E1FA21820008AFAC1 /* WebimRemoteNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebimRemoteNotification.swift; sourceTree = "<group>"; };
 		CE67FB1A1FA22231007117B4 /* FatalErrorHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FatalErrorHandler.swift; sourceTree = "<group>"; };
 		CE67FB1C1FA22454007117B4 /* WebimError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebimError.swift; sourceTree = "<group>"; };
 		CE67FB1E1FA22FC0007117B4 /* MessageStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageStream.swift; sourceTree = "<group>"; };
@@ -137,7 +137,7 @@
 				CE67FB201FA2340C007117B4 /* Operator.swift */,
 				CE87B5B31FA1DBCA0070FF5F /* Webim.swift */,
 				CE67FB1C1FA22454007117B4 /* WebimError.swift */,
-				CE03FC1E1FA21820008AFAC1 /* WebimPushNotification.swift */,
+				CE03FC1E1FA21820008AFAC1 /* WebimRemoteNotification.swift */,
 				CE87B5B51FA1EA920070FF5F /* WebimSession.swift */,
 				CE87B5B21FA1DBCA0070FF5F /* ObjectiveCExample-Bridging-Header.h */,
 			);
@@ -275,7 +275,7 @@
 				CE87B58D1FA1DA0A0070FF5F /* main.m in Sources */,
 				CE67FB1B1FA22231007117B4 /* FatalErrorHandler.swift in Sources */,
 				CE87B5B41FA1DBCA0070FF5F /* Webim.swift in Sources */,
-				CE03FC1F1FA21820008AFAC1 /* WebimPushNotification.swift in Sources */,
+				CE03FC1F1FA21820008AFAC1 /* WebimRemoteNotification.swift in Sources */,
 				CE67FB211FA2340C007117B4 /* Operator.swift in Sources */,
 				CE87B57F1FA1DA0A0070FF5F /* AppDelegate.m in Sources */,
 				CE67FB1F1FA22FC0007117B4 /* MessageStream.swift in Sources */,
