@@ -65,4 +65,9 @@ final class _ObjCWebimSession: NSObject {
         return _ObjCMessageStream(messageStream: webimSession.getStream())
     }
     
+    @objc(changeLocation:error:)
+    func change(location: String) throws {
+        try webimSession.change(location: location)
+    }
+    
 }
