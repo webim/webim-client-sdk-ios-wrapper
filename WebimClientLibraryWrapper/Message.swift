@@ -141,7 +141,7 @@ final class _ObjCMessage: NSObject {
     func isEqual(to message: _ObjCMessage) -> Bool {
         if let firstInternalMessage = self.message,
             let secondInternalMessage = message.message {
-            return firstInternalMessage.isEquals(to: secondInternalMessage)
+            return firstInternalMessage.isEqual(to: secondInternalMessage)
         } else {
             return false
         }
