@@ -137,6 +137,16 @@ final class _ObjCMessage: NSObject {
         }
     }
     
+    @objc(isEqualTo:)
+    func isEqual(to message: _ObjCMessage) -> Bool {
+        if let firstInternalMessage = self.message,
+            let secondInternalMessage = message.message {
+            return firstInternalMessage.isEquals(to: secondInternalMessage)
+        } else {
+            return false
+        }
+    }
+    
 }
 
 // MARK: - MessageAttachment
