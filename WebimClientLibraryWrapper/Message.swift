@@ -234,14 +234,6 @@ final class _ObjCImageInfo: NSObject {
 }
 
 
-// MARK: - MessageSendStatus
-@objc(MessageSendStatus)
-enum _ObjCMessageSendStatus: Int {
-    case NONE = 0
-    case SENDING = 1
-    case SENT = 2
-}
-
 // MARK: - MessageType
 @objc(MessageType)
 enum _ObjCMessageType: Int {
@@ -253,4 +245,12 @@ enum _ObjCMessageType: Int {
     case OPERATOR = 5
     case OPERATOR_BUSY = 6
     case VISITOR = 7
+}
+
+// MARK: - MessageSendStatus
+@objc(MessageSendStatus)
+enum _ObjCMessageSendStatus: Int {
+    case NONE = 0
+    case SENDING = 1
+    case SENT = 2
 }

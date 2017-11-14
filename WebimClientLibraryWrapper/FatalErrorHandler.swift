@@ -24,10 +24,8 @@
 //  SOFTWARE.
 //
 
-
 import Foundation
 import WebimClientLibrary
-
 
 // MARK: - FatalErrorHandler
 @objc(FatalErrorHandler)
@@ -36,15 +34,4 @@ protocol _ObjCFatalErrorHandler {
     @objc(onError:)
     func on(error: _ObjCWebimError)
     
-}
-
-
-// MARK: - FatalErrorType
-@objc(FatalErrorType)
-enum _ObjCFatalErrorType: Int {
-    case ACCOUNT_BLOCKED
-    case PROVIDED_VISITOR_EXPIRED
-    case UNKNOWN
-    case VISITOR_BANNED
-    case WRONG_PROVIDED_VISITOR_HASH
 }

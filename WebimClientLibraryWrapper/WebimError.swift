@@ -67,3 +67,14 @@ final class _ObjCWebimError: NSObject {
     }
     
 }
+
+
+// MARK: - FatalErrorType
+@objc(FatalErrorType)
+enum _ObjCFatalErrorType: Int {
+    case ACCOUNT_BLOCKED
+    case PROVIDED_VISITOR_EXPIRED
+    case UNKNOWN
+    case VISITOR_BANNED
+    case WRONG_PROVIDED_VISITOR_HASH
+}
