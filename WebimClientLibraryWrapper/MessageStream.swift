@@ -140,14 +140,19 @@ final class _ObjCMessageStream: NSObject {
         messageStream.set(currentOperatorChangeListener: CurrentOperatorChangeListenerWrapper(currentOperatorChangeListener: currentOperatorChangeListener))
     }
     
+    @objc(LocationSettingsChangeListener:)
+    func set(locationSettingsChangeListener: _ObjCLocationSettingsChangeListener) {
+        messageStream.set(locationSettingsChangeListener: LocationSettingsChangeListenerWrapper(locationSettingsChangeListener: locationSettingsChangeListener))
+    }
+    
     @objc(setOperatorTypingListener:)
     func set(operatorTypingListener: _ObjCOperatorTypingListener) {
         messageStream.set(operatorTypingListener: OperatorTypingListenerWrapper(operatorTypingListener: operatorTypingListener))
     }
     
-    @objc(LocationSettingsChangeListener:)
-    func set(locationSettingsChangeListener: _ObjCLocationSettingsChangeListener) {
-        messageStream.set(locationSettingsChangeListener: LocationSettingsChangeListenerWrapper(locationSettingsChangeListener: locationSettingsChangeListener))
+    @objc(setSessionOnlineStatusChangeListener:)
+    func set(sessionOnlineStatusChangeListener: _ObjCSessionOnlineStatusChangeListener) {
+        messageStream.set(sessionOnlineStatusChangeListener: SessionOnlineStatusChangeListenerWrapper(sessionOnlineStatusChangeListener: sessionOnlineStatusChangeListener))
     }
     
 }
@@ -206,6 +211,16 @@ protocol _ObjCCurrentOperatorChangeListener {
     
 }
 
+// MARK: - LocationSettingsChangeListener
+@objc(LocationSettingsChangeListener)
+protocol _ObjCLocationSettingsChangeListener {
+    
+    @objc(changedLocationSettings:to:)
+    func changed(locationSettings previousLocationSettings: _ObjCLocationSettings,
+                 to newLocationSettings: _ObjCLocationSettings)
+    
+}
+
 // MARK: - OperatorTypingListener
 @objc(OperatorTypingListener)
 protocol _ObjCOperatorTypingListener {
@@ -215,13 +230,13 @@ protocol _ObjCOperatorTypingListener {
     
 }
 
-// MARK: - LocationSettingsChangeListener
-@objc(LocationSettingsChangeListener)
-protocol _ObjCLocationSettingsChangeListener {
+// MARK: - SessionOnlineStatusChangeListener
+@objc(SessionOnlineStatusChangeListener)
+protocol _ObjCSessionOnlineStatusChangeListener {
     
-    @objc(changedLocationSettings:To:)
-    func changed(locationSettings previousLocationSettings: _ObjCLocationSettings,
-                 to newLocationSettings: _ObjCLocationSettings)
+    @objc(changedSessionOnlineStatus:to:)
+    func changed(sessionOnlineStatus previousSessionOnlineStatus: _ObjCSessionOnlineStatus,
+                 to newSessionOnlineStatus: _ObjCSessionOnlineStatus)
     
 }
 
@@ -243,6 +258,16 @@ enum _ObjCChatState: Int {
 enum _ObjCSendFileError: Int, Error {
     case FILE_SIZE_EXCEEDED
     case FILE_TYPE_NOT_ALLOWED
+}
+
+// MARK: - SessionOnlineStatus
+@objc(SessionOnlineStatus)
+enum _ObjCSessionOnlineStatus: Int {
+    case BUSY_OFFLINE
+    case BUSY_ONLINE
+    case OFFLINE
+    case ONLINE
+    case UNKNOWN
 }
 
 
@@ -307,44 +332,44 @@ fileprivate final class ChatStateListenerWrapper: ChatStateListener {
     // MARK: ChatStateListener protocol methods
     func changed(state previousState: ChatState,
                  to newState: ChatState) {
-        var previousChatState: _ObjCChatState?
+        var previousObjCChatState: _ObjCChatState?
         switch previousState {
         case .CHATTING:
-            previousChatState = .CHATTING
+            previousObjCChatState = .CHATTING
         case .CLOSED_BY_OPERATOR:
-            previousChatState = .CLOSED_BY_OPERATOR
+            previousObjCChatState = .CLOSED_BY_OPERATOR
         case .CLOSED_BY_VISITOR:
-            previousChatState = .CLOSED_BY_VISITOR
+            previousObjCChatState = .CLOSED_BY_VISITOR
         case .INVITATION:
-            previousChatState = .INVITATION
+            previousObjCChatState = .INVITATION
         case .NONE:
-            previousChatState = .NONE
+            previousObjCChatState = .NONE
         case .QUEUE:
-            previousChatState = .QUEUE
+            previousObjCChatState = .QUEUE
         case .UNKNOWN:
-            previousChatState = .UNKNOWN
+            previousObjCChatState = .UNKNOWN
         }
         
-        var newChatState: _ObjCChatState?
+        var newObjCChatState: _ObjCChatState?
         switch newState {
         case .CHATTING:
-            newChatState = .CHATTING
+            newObjCChatState = .CHATTING
         case .CLOSED_BY_OPERATOR:
-            newChatState = .CLOSED_BY_OPERATOR
+            newObjCChatState = .CLOSED_BY_OPERATOR
         case .CLOSED_BY_VISITOR:
-            newChatState = .CLOSED_BY_VISITOR
+            newObjCChatState = .CLOSED_BY_VISITOR
         case .INVITATION:
-            newChatState = .INVITATION
+            newObjCChatState = .INVITATION
         case .NONE:
-            newChatState = .NONE
+            newObjCChatState = .NONE
         case .QUEUE:
-            newChatState = .QUEUE
+            newObjCChatState = .QUEUE
         case .UNKNOWN:
-            newChatState = .UNKNOWN
+            newObjCChatState = .UNKNOWN
         }
         
-        chatStateListener.changed(state: previousChatState!,
-                                  to: newChatState!)
+        chatStateListener.changed(state: previousObjCChatState!,
+                                  to: newObjCChatState!)
     }
     
 }
@@ -370,6 +395,27 @@ fileprivate final class CurrentOperatorChangeListenerWrapper: CurrentOperatorCha
     
 }
 
+// MARK: - LocationSettingsChangeListener
+fileprivate final class LocationSettingsChangeListenerWrapper: LocationSettingsChangeListener {
+    
+    // MARK: - Properties
+    private (set) var locationSettingsChangeListener: _ObjCLocationSettingsChangeListener
+    
+    // MARK: - Initialization
+    init(locationSettingsChangeListener: _ObjCLocationSettingsChangeListener) {
+        self.locationSettingsChangeListener = locationSettingsChangeListener
+    }
+    
+    // MARK: - Methods
+    // MARK: LocationSettingsChangeListener protocol methods
+    func changed(locationSettings previousLocationSettings: LocationSettings,
+                 to newLocationSettings: LocationSettings) {
+        locationSettingsChangeListener.changed(locationSettings: _ObjCLocationSettings(locationSettings: previousLocationSettings),
+                                               to: _ObjCLocationSettings(locationSettings: newLocationSettings))
+    }
+    
+}
+
 // MARK: - OperatorTypingListener
 fileprivate final class OperatorTypingListenerWrapper: OperatorTypingListener {
     
@@ -389,23 +435,52 @@ fileprivate final class OperatorTypingListenerWrapper: OperatorTypingListener {
     
 }
 
-// MARK: - LocationSettingsChangeListener
-fileprivate final class LocationSettingsChangeListenerWrapper: LocationSettingsChangeListener {
+// MARK: - SessionOnlineStatusChangeListener
+fileprivate final class SessionOnlineStatusChangeListenerWrapper: SessionOnlineStatusChangeListener {
     
     // MARK: - Properties
-    private (set) var locationSettingsChangeListener: _ObjCLocationSettingsChangeListener
+    private (set) var sessionOnlineStatusChangeListener: _ObjCSessionOnlineStatusChangeListener
     
     // MARK: - Initialization
-    init(locationSettingsChangeListener: _ObjCLocationSettingsChangeListener) {
-        self.locationSettingsChangeListener = locationSettingsChangeListener
+    init(sessionOnlineStatusChangeListener: _ObjCSessionOnlineStatusChangeListener) {
+        self.sessionOnlineStatusChangeListener = sessionOnlineStatusChangeListener
     }
     
     // MARK: - Methods
-    // MARK: LocationSettingsChangeListener protocol methods
-    func changed(locationSettings previousLocationSettings: LocationSettings,
-                 to newLocationSettings: LocationSettings) {
-        locationSettingsChangeListener.changed(locationSettings: _ObjCLocationSettings(locationSettings: previousLocationSettings),
-                                               to: _ObjCLocationSettings(locationSettings: newLocationSettings))
+    // MARK: SessionOnlineStatusChangeListener protocol methods
+    func changed(sessionOnlineStatus previousSessionOnlineStatus: SessionOnlineStatus,
+                 to newSessionOnlineStatus: SessionOnlineStatus) {
+        var previousObjCSessionOnlineStatus: _ObjCSessionOnlineStatus?
+        switch previousSessionOnlineStatus {
+        case .BUSY_OFFLINE:
+            previousObjCSessionOnlineStatus = .BUSY_OFFLINE
+        case .BUSY_ONLINE:
+            previousObjCSessionOnlineStatus = .BUSY_ONLINE
+        case .OFFLINE:
+            previousObjCSessionOnlineStatus = .OFFLINE
+        case .ONLINE:
+            previousObjCSessionOnlineStatus = .ONLINE
+        case .UNKNOWN:
+            previousObjCSessionOnlineStatus = .UNKNOWN
+        }
+        
+        var newObjCSessionOnlineStatus: _ObjCSessionOnlineStatus?
+        switch newSessionOnlineStatus {
+        case .BUSY_OFFLINE:
+            newObjCSessionOnlineStatus = .BUSY_OFFLINE
+        case .BUSY_ONLINE:
+            newObjCSessionOnlineStatus = .BUSY_ONLINE
+        case .OFFLINE:
+            newObjCSessionOnlineStatus = .OFFLINE
+        case .ONLINE:
+            newObjCSessionOnlineStatus = .ONLINE
+        case .UNKNOWN:
+            newObjCSessionOnlineStatus = .UNKNOWN
+        }
+        
+        sessionOnlineStatusChangeListener.changed(sessionOnlineStatus: previousObjCSessionOnlineStatus!,
+                                                  to: newObjCSessionOnlineStatus!)
     }
+    
     
 }
