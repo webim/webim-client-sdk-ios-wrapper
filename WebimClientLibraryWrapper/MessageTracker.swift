@@ -45,10 +45,33 @@ final class _ObjCMessageTracker: NSObject {
     
     // MARK: - Methods
     
+    @objc(getLastMessagesByLimit:completion:error:)
+    func getLastMessages(byLimit limitOfMessages: Int,
+                         completion: @escaping (_ result: [_ObjCMessage]) -> ()) throws {
+        try messageTracker.getLastMessages(byLimit: limitOfMessages) { messages in
+            var objCMessages = [_ObjCMessage]()
+            for message in messages {
+                objCMessages.append(_ObjCMessage(message: message)!)
+            }
+            completion(objCMessages)
+        }
+    }
+    
     @objc(getNextMessagesByLimit:completion:error:)
-    func getNextMessages(byLimit limit: Int,
+    func getNextMessages(byLimit limitOfMessages: Int,
                          completion: @escaping ([_ObjCMessage]) -> ()) throws {
-        try messageTracker.getNextMessages(byLimit: limit) { messages in
+        try messageTracker.getNextMessages(byLimit: limitOfMessages) { messages in
+            var objCMessages = [_ObjCMessage]()
+            for message in messages {
+                objCMessages.append(_ObjCMessage(message: message)!)
+            }
+            completion(objCMessages)
+        }
+    }
+    
+    @objc(getAllMessagesWithCompletion:error:)
+    func getAllMessages(completion: @escaping (_ result: [_ObjCMessage]) -> ()) throws {
+        try messageTracker.getAllMessages() { messages in
             var objCMessages = [_ObjCMessage]()
             for message in messages {
                 objCMessages.append(_ObjCMessage(message: message)!)
