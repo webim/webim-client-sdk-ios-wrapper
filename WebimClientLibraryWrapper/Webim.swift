@@ -83,42 +83,60 @@ final class _ObjCSessionBuilder: NSObject {
     @objc(setAccountName:)
     func set(accountName: String) -> _ObjCSessionBuilder {
         sessionBuilder = sessionBuilder.set(accountName: accountName)
+        
         return self
     }
     
     @objc(setLocation:)
     func set(location: String) -> _ObjCSessionBuilder {
         sessionBuilder = sessionBuilder.set(location: location)
+        
         return self
     }
     
     @objc(setAppVersion:)
     func set(appVersion: String) -> _ObjCSessionBuilder {
         sessionBuilder = sessionBuilder.set(appVersion: appVersion)
+        
         return self
     }
     
     @objc(setVisitorFieldsJSONString:)
     func set(visitorFieldsJSONString: String) -> _ObjCSessionBuilder {
         sessionBuilder = sessionBuilder.set(visitorFieldsJSONString: visitorFieldsJSONString)
+        
         return self
     }
     
     @objc(setVisitorFieldsJSONData:)
     func set(visitorFieldsJSONData: Data) -> _ObjCSessionBuilder {
         sessionBuilder = sessionBuilder.set(visitorFieldsJSONData: visitorFieldsJSONData)
+        
+        return self
+    }
+    
+    @objc(setProvidedAuthorizationTokenStateListener:providedAuthorizationToken:)
+    func set(providedAuthorizationTokenStateListener: _ObjCProvidedAuthorizationTokenStateListener,
+             providedAuthorizationToken: String? = nil) -> _ObjCSessionBuilder {
+        if let providedAuthorizationTokenStateListenerWrapper = ProvidedAuthorizationTokenStateListenerWrapper(providedAuthorizationTokenStateListener: providedAuthorizationTokenStateListener) {
+            sessionBuilder = sessionBuilder.set(providedAuthorizationTokenStateListener: providedAuthorizationTokenStateListenerWrapper,
+                                                providedAuthorizationToken: providedAuthorizationToken)
+        }
+        
         return self
     }
     
     @objc(setPageTitle:)
     func set(pageTitle: String) -> _ObjCSessionBuilder {
         sessionBuilder = sessionBuilder.set(pageTitle: pageTitle)
+        
         return self
     }
     
     @objc(setFatalErrorHandler:)
     func set(fatalErrorHandler: _ObjCFatalErrorHandler) -> _ObjCSessionBuilder {
         sessionBuilder = sessionBuilder.set(fatalErrorHandler: FatalErrorHandlerWrapper(fatalErrorHandler: fatalErrorHandler))
+        
         return self
     }
     
@@ -139,18 +157,21 @@ final class _ObjCSessionBuilder: NSObject {
     @objc(setDeviceToken:)
     func set(deviceToken: String?) -> _ObjCSessionBuilder {
         sessionBuilder = sessionBuilder.set(deviceToken: deviceToken)
+        
         return self
     }
     
     @objc(setIsLocalHistoryStoragingEnabled:)
     public func set(isLocalHistoryStoragingEnabled: Bool) -> _ObjCSessionBuilder {
         sessionBuilder = sessionBuilder.set(isLocalHistoryStoragingEnabled: isLocalHistoryStoragingEnabled)
+        
         return self
     }
     
     @objc(setIsVisitorDataClearingEnabled:)
     func set(isVisitorDataClearingEnabled: Bool) -> _ObjCSessionBuilder {
         sessionBuilder = sessionBuilder.set(isVisitorDataClearingEnabled: isVisitorDataClearingEnabled)
+        
         return self
     }
     

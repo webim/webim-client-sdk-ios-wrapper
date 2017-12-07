@@ -15,6 +15,7 @@
 		CE67FB231FA241BA007117B4 /* MessageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE67FB221FA241BA007117B4 /* MessageTracker.swift */; };
 		CE67FB251FA24290007117B4 /* MessageListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE67FB241FA24290007117B4 /* MessageListener.swift */; };
 		CE67FB271FA243D8007117B4 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE67FB261FA243D8007117B4 /* Message.swift */; };
+		CE7B80F31FD9A89F00772BAA /* ProvidedAuthorizationTokenStateListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7B80F21FD9A89F00772BAA /* ProvidedAuthorizationTokenStateListener.swift */; };
 		CE87B57F1FA1DA0A0070FF5F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CE87B57E1FA1DA0A0070FF5F /* AppDelegate.m */; };
 		CE87B5821FA1DA0A0070FF5F /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE87B5811FA1DA0A0070FF5F /* ViewController.m */; };
 		CE87B5851FA1DA0A0070FF5F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE87B5831FA1DA0A0070FF5F /* Main.storyboard */; };
@@ -41,6 +42,7 @@
 		CE67FB221FA241BA007117B4 /* MessageTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTracker.swift; sourceTree = "<group>"; };
 		CE67FB241FA24290007117B4 /* MessageListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageListener.swift; sourceTree = "<group>"; };
 		CE67FB261FA243D8007117B4 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		CE7B80F21FD9A89F00772BAA /* ProvidedAuthorizationTokenStateListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProvidedAuthorizationTokenStateListener.swift; sourceTree = "<group>"; };
 		CE87B57A1FA1DA0A0070FF5F /* ObjectiveCExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjectiveCExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE87B57D1FA1DA0A0070FF5F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		CE87B57E1FA1DA0A0070FF5F /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -135,6 +137,7 @@
 				CE67FB1E1FA22FC0007117B4 /* MessageStream.swift */,
 				CE67FB221FA241BA007117B4 /* MessageTracker.swift */,
 				CE67FB201FA2340C007117B4 /* Operator.swift */,
+				CE7B80F21FD9A89F00772BAA /* ProvidedAuthorizationTokenStateListener.swift */,
 				CE87B5B31FA1DBCA0070FF5F /* Webim.swift */,
 				CE67FB1C1FA22454007117B4 /* WebimError.swift */,
 				CE03FC1E1FA21820008AFAC1 /* WebimRemoteNotification.swift */,
@@ -224,9 +227,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-ObjectiveCExample/Pods-ObjectiveCExample-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/CryptoSwift/CryptoSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/SQLite.swift/SQLite.framework",
+				"${BUILT_PRODUCTS_DIR}/WebimClientLibrary/WebimClientLibrary.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CryptoSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SQLite.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WebimClientLibrary.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -239,13 +249,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ObjectiveCExample-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D511EDB9B52E28629AF72A67 /* [CP] Copy Pods Resources */ = {
@@ -270,6 +283,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE7B80F31FD9A89F00772BAA /* ProvidedAuthorizationTokenStateListener.swift in Sources */,
 				CE67FB231FA241BA007117B4 /* MessageTracker.swift in Sources */,
 				CE87B5821FA1DA0A0070FF5F /* ViewController.m in Sources */,
 				CE87B58D1FA1DA0A0070FF5F /* main.m in Sources */,

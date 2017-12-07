@@ -50,8 +50,8 @@ final class _ObjCWebimError: NSObject {
         switch webimError.getErrorType() {
         case .ACCOUNT_BLOCKED:
             return .ACCOUNT_BLOCKED
-        case .PROVIDED_VISITOR_EXPIRED:
-            return .PROVIDED_VISITOR_EXPIRED
+        case .PROVIDED_VISITOR_FIELDS_EXPIRED:
+            return .PROVIDED_VISITOR_FIELDS_EXPIRED
         case .UNKNOWN:
             return .UNKNOWN
         case .VISITOR_BANNED:
@@ -73,7 +73,7 @@ final class _ObjCWebimError: NSObject {
 @objc(FatalErrorType)
 enum _ObjCFatalErrorType: Int {
     case ACCOUNT_BLOCKED
-    case PROVIDED_VISITOR_EXPIRED
+    case PROVIDED_VISITOR_FIELDS_EXPIRED
     case UNKNOWN
     case VISITOR_BANNED
     case WRONG_PROVIDED_VISITOR_HASH

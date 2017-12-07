@@ -81,7 +81,7 @@ class MessageImpl {
         
         self.historyMessage = historyMessage
         if historyMessage {
-            historyID = HistoryID(withDBid: internalID!,
+            historyID = HistoryID(dbID: internalID!,
                                   timeInMicrosecond: timeInMicrosecond)
         } else {
             currentChatID = internalID
@@ -264,8 +264,14 @@ extension MessageImpl: Message {
         return operatorID
     }
     
-    func getSenderAvatarFullURLString() -> String? {
-        return (senderAvatarURLString == nil) ? nil : (serverURLString + senderAvatarURLString!)
+    func getSenderAvatarFullURL() -> URL? {
+        guard let senderAvatarURLString = senderAvatarURLString else {
+            return nil
+        }
+        
+        let fullSenderAvatarURLString = serverURLString + senderAvatarURLString
+        
+        return URL(string: fullSenderAvatarURLString)
     }
     
     func getSendStatus() -> MessageSendStatus {
@@ -280,8 +286,8 @@ extension MessageImpl: Message {
         return text
     }
     
-    func getTime() -> Int64 {
-        return timeInMicrosecond / 1000
+    func getTime() -> Date {
+        return Date(timeIntervalSince1970: TimeInterval(timeInMicrosecond / 1000000))
     }
     
     func getType() -> MessageType {
@@ -331,6 +337,12 @@ extension MessageImpl: Equatable {
  */
 final class MessageAttachmentImpl {
     
+    // MARK: - Constants
+    private enum Period: Int64 {
+        case ATTACHMENT_URL_EXPIRES_PERIOD = 300 // (seconds) = 5 (minutes).
+    }
+    
+    
     // MARK: - Properties
     private let urlString: String?
     private let size: Int64?
@@ -340,7 +352,7 @@ final class MessageAttachmentImpl {
     
     
     // MARK: - Initialization
-    init(withURLString urlString: String?,
+    init(urlString: String?,
          size: Int64?,
          filename: String?,
          contentType: String?,
@@ -355,6 +367,7 @@ final class MessageAttachmentImpl {
     
     // MARK: - Methods
     static func getAttachment(byServerURL serverURLString: String,
+                              webimClient: WebimClient,
                               text: String) -> MessageAttachment? {
         let textData = text.data(using: .utf8)
         guard let textDictionary = try? JSONSerialization.jsonObject(with: textData!,
@@ -364,29 +377,41 @@ final class MessageAttachmentImpl {
                                                                         return nil
         }
         
-        let fileParameters = FileParametersItem(withJSONDictionary: textDictionary!)
-        guard let filename = fileParameters.getFilename() else {
+        let fileParameters = FileParametersItem(jsonDictionary: textDictionary!)
+        guard let filename = fileParameters.getFilename(),
+            let guid = fileParameters.getGUID(),
+            let contentType = fileParameters.getContentType() else {
             return nil
         }
-        guard let guid = fileParameters.getGUID() else {
-            return nil
-        }
-        guard let contentType = fileParameters.getContentType() else {
-            return nil
-        }
-        let fileURLString = serverURLString +
-            WebimActions.ServerPathSuffix.DOWNLOAD_FILE.rawValue +
-            "/" +
-            guid +
-            "/" +
-            filename.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         
-        return MessageAttachmentImpl(withURLString: fileURLString,
-                                     size: fileParameters.getSize(),
-                                     filename: filename,
-                                     contentType: contentType,
-                                     imageInfo: extractImageInfoOf(fileParameters: fileParameters,
-                                                                   with: fileURLString))
+        guard let pageID = webimClient.getDeltaRequestLoop().getAuthorizationData()?.getPageID(),
+            let authorizationToken = webimClient.getDeltaRequestLoop().getAuthorizationData()?.getAuthorizationToken() else {
+            print("Tried to access to message attachment without authorization data.")
+            
+            return nil
+        }
+        
+        let expires = Int64(Date().timeIntervalSince1970) + Period.ATTACHMENT_URL_EXPIRES_PERIOD.rawValue
+        let data: String = guid + String(expires)
+        if let hash = data.hmacSHA256(withKey: authorizationToken) {
+            let fileURLString = serverURLString + WebimActions.ServerPathSuffix.DOWNLOAD_FILE.rawValue + "/"
+                + guid + "/"
+                + filename.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)! + "?"
+                + "page-id" + "=" + pageID + "&"
+                + "expires" + "=" + String(expires) + "&"
+                + "hash" + "=" + hash
+            
+            return MessageAttachmentImpl(urlString: fileURLString,
+                                         size: fileParameters.getSize(),
+                                         filename: filename,
+                                         contentType: contentType,
+                                         imageInfo: extractImageInfoOf(fileParameters: fileParameters,
+                                                                       with: fileURLString))
+        } else {
+            print("Error creating message attachment link due to HMAC SHA256 encoding error.")
+            
+            return nil
+        }
     }
     
     

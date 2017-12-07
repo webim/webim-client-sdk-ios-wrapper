@@ -79,9 +79,9 @@ final class _ObjCMessage: NSObject {
         return message?.getOperatorID()
     }
     
-    @objc(getSenderAvatarFullURLString)
-    func getSenderAvatarFullURLString() -> String? {
-        return message?.getSenderAvatarFullURLString()
+    @objc(getSenderAvatarFullURL)
+    func getSenderAvatarFullURL() -> URL? {
+        return message?.getSenderAvatarFullURL()
     }
     
     @objc(getSenderName)
@@ -109,8 +109,8 @@ final class _ObjCMessage: NSObject {
     }
     
     @objc(getTime)
-    func getTime() -> NSNumber? {
-        return message?.getTime() as NSNumber?
+    func getTime() -> Date? {
+        return message?.getTime() as Date?
     }
     
     @objc(getType)

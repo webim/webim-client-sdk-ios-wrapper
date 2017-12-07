@@ -41,7 +41,7 @@ final class HistoryID {
     
     
     // MARK: - Initialization
-    init(withDBid dbID: String,
+    init(dbID: String,
          timeInMicrosecond: Int64) {
         self.dbID = dbID
         self.timeInMicrosecond = timeInMicrosecond

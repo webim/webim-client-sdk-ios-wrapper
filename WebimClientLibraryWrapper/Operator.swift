@@ -59,9 +59,9 @@ final class _ObjCOperator: NSObject {
         return `operator`?.getName()
     }
     
-    @objc(getAvatarURLString)
-    func getAvatarURLString() -> String? {
-        return `operator`?.getAvatarURLString()
+    @objc(getAvatarURL)
+    func getAvatarURL() -> URL? {
+        return `operator`?.getAvatarURL()
     }
     
 }

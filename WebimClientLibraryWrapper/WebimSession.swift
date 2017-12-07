@@ -70,4 +70,9 @@ final class _ObjCWebimSession: NSObject {
         try webimSession.change(location: location)
     }
     
+    @objc(setDeviceToken:error:)
+    func set(deviceToken: String) throws {
+        try webimSession.set(deviceToken: deviceToken)
+    }
+    
 }

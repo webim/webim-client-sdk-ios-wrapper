@@ -44,7 +44,7 @@ final class DeltaCallback {
     private var messageStream: MessageStreamImpl?
     
     // MARK: - Initialization
-    init(withCurrentChatMessageMapper currentChatMessageMapper: MessageFactoriesMapper) {
+    init(currentChatMessageMapper: MessageFactoriesMapper) {
         self.currentChatMessageMapper = currentChatMessageMapper
     }
     
@@ -114,13 +114,13 @@ final class DeltaCallback {
         
         currentChat = fullUpdate.getChat()
         
-        messageStream!.receivingFullUpdateOf(chat: currentChat)
+        messageStream!.changingChatStateOf(chat: currentChat)
         
         messageStream!.saveLocationSettingsOn(fullUpdate: fullUpdate)
         
-        if let sessionOnlineStatusString = fullUpdate.getOnlineStatus() {
-            if let sessionOnlineStatus = SessionOnlineStatusItem(rawValue: sessionOnlineStatusString) {
-                messageStream!.onSessionOnlineStatusChanged(to: sessionOnlineStatus)
+        if let onlineStatusString = fullUpdate.getOnlineStatus() {
+            if let onlineStatus = OnlineStatusItem(rawValue: onlineStatusString) {
+                messageStream!.onOnlineStatusChanged(to: onlineStatus)
             }
         }
     }
@@ -160,7 +160,7 @@ final class DeltaCallback {
             messageHolder.deletedMessageWith(id: sessionID)
         } else {
             if let deltaData = delta.getData() as? [String : Any?] {
-                let messageItem = MessageItem(withJSONDictionary: deltaData)
+                let messageItem = MessageItem(jsonDictionary: deltaData)
                 let message = currentChatMessageMapper.map(message: messageItem)
                 if deltaEvent == .ADD {
                     if currentChat != nil {
@@ -194,7 +194,7 @@ final class DeltaCallback {
     private func handleChatOperatorUpdateBy(delta: DeltaItem,
                                             messageStream: MessageStreamImpl) {
         if let deltaData = delta.getData() as? [String : Any?] {
-            let operatorItem = OperatorItem(withJSONDictionary: deltaData)
+            let operatorItem = OperatorItem(jsonDictionary: deltaData)
             if delta.getEvent() == .UPDATE {
                 if currentChat != nil {
                     currentChat!.set(operator: operatorItem)
@@ -245,11 +245,11 @@ final class DeltaCallback {
     private func handleOperatorRateUpdateBy(delta: DeltaItem,
                                             messageStream: MessageStreamImpl) {
         if let deltaData = delta.getData() as? [String : Any?] {
-            if let rating = RatingItem(withJSONDictionary: deltaData) {
+            if let rating = RatingItem(jsonDictionary: deltaData) {
                 if delta.getEvent() == .UPDATE {
                     if currentChat != nil {
                         currentChat!.set(rating: rating,
-                                         toOperatorWithId: rating.getOperatorID()!)
+                                         toOperatorWithId: rating.getOperatorID())
                     }
                 }
             }
@@ -260,7 +260,7 @@ final class DeltaCallback {
                                                  messageStream: MessageStreamImpl) {
         if let sessionState = delta.getData() as? String {
             if sessionState == InvitationStateItem.OFFLINE_MESSAGE.rawValue {
-                messageStream.set(sessionOnlineStatus: .OFFLINE)
+                messageStream.set(onlineStatus: .OFFLINE)
                 messageStream.getWebimActions().closeChat()
             }
             

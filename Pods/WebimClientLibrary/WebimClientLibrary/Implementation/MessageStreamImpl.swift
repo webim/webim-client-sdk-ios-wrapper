@@ -47,18 +47,20 @@ final class MessageStreamImpl: MessageStream {
     private var currentOperator: OperatorImpl?
     private var currentOperatorChangeListener: CurrentOperatorChangeListener?
     private var invitationState: InvitationStateItem = .UNKNOWN
-    private var isChatIsOpening: Bool?
+    private var isChatIsOpening = false
     private var lastChatState: ChatItem.ChatItemState = .CLOSED
     private var lastOperatorTypingStatus: Bool?
     private var locationSettingsChangeListener: LocationSettingsChangeListener?
     private var operatorFactory: OperatorFactory
     private var operatorTypingListener: OperatorTypingListener?
-    private var sessionOnlineStatus: SessionOnlineStatusItem = .UNKNOWN
-    private var sessionOnlineStatusChangeListener: SessionOnlineStatusChangeListener?
+    private var onlineStatus: OnlineStatusItem = .UNKNOWN
+    private var onlineStatusChangeListener: OnlineStatusChangeListener?
+    private var unreadByOperatorTimestamp: Date?
+    private var unreadByVisitorTimestamp: Date?
     
     
     // MARK: - Initialization
-    init(withCurrentChatMessageFactoriesMapper currentChatMessageFactoriesMapper: MessageFactoriesMapper,
+    init(currentChatMessageFactoriesMapper: MessageFactoriesMapper,
          sendingMessageFactory: SendingFactory,
          operatorFactory: OperatorFactory,
          accessChecker: AccessChecker,
@@ -89,12 +91,8 @@ final class MessageStreamImpl: MessageStream {
         isChatIsOpening = false
     }
     
-    func set(sessionOnlineStatus: SessionOnlineStatusItem) {
-        self.sessionOnlineStatus = sessionOnlineStatus
-    }
-    
-    func receivingFullUpdateOf(chat: ChatItem?) {
-        changingChatStateOf(chat: chat)
+    func set(onlineStatus: OnlineStatusItem) {
+        self.onlineStatus = onlineStatus
     }
     
     func changingChatStateOf(chat: ChatItem?) {
@@ -133,13 +131,20 @@ final class MessageStreamImpl: MessageStream {
             operatorTypingListener!.onOperatorTypingStateChanged(isTyping: operatorTypingStatus)
         }
         lastOperatorTypingStatus = operatorTypingStatus
+        
+        if let unreadByOperatorTimestamp = chat?.getUnreadByOperatorTimestamp() {
+            self.unreadByOperatorTimestamp = Date(timeIntervalSince1970: unreadByOperatorTimestamp)
+        }
+        if let unreadByVisitorTimestamp = chat?.getUnreadByVisitorTimestamp() {
+            self.unreadByVisitorTimestamp = Date(timeIntervalSince1970: unreadByVisitorTimestamp)
+        }
     }
     
     func saveLocationSettingsOn(fullUpdate: FullUpdate) {
         let hintsEnabled = (fullUpdate.getHintsEnabled() == true)
         
         let previousLocationSettings = locationSettingsHolder.getLocationSettings()
-        let newLocationSettings = LocationSettingsImpl(withHintsEnabled: hintsEnabled)
+        let newLocationSettings = LocationSettingsImpl(hintsEnabled: hintsEnabled)
         
         let newLocationSettingsReceived = locationSettingsHolder.receiving(locationSettings: newLocationSettings)
         
@@ -150,32 +155,32 @@ final class MessageStreamImpl: MessageStream {
         }
     }
     
-    func onSessionOnlineStatusChanged(to newSessionOnlineStatus: SessionOnlineStatusItem) {
-        let previousPublicSessionOnlineStatus = publicState(ofSessionOnlineState: sessionOnlineStatus)
-        let newPublicSessionOnlineStatus = publicState(ofSessionOnlineState: newSessionOnlineStatus)
+    func onOnlineStatusChanged(to newOnlineStatus: OnlineStatusItem) {
+        let previousPublicOnlineStatus = publicState(ofOnlineStatus: onlineStatus)
+        let newPublicOnlineStatus = publicState(ofOnlineStatus: newOnlineStatus)
         
-        if sessionOnlineStatusChangeListener != nil
-            && (sessionOnlineStatus != newSessionOnlineStatus) {
-            sessionOnlineStatusChangeListener!.changed(sessionOnlineStatus: previousPublicSessionOnlineStatus,
-                                                       to: newPublicSessionOnlineStatus)
+        if onlineStatusChangeListener != nil
+            && (onlineStatus != newOnlineStatus) {
+            onlineStatusChangeListener!.changed(onlineStatus: previousPublicOnlineStatus,
+                                                       to: newPublicOnlineStatus)
         }
         
-        sessionOnlineStatus = newSessionOnlineStatus
+        onlineStatus = newOnlineStatus
     }
     
     
     // MARK: - MessageStream protocol methods
     
-    func getChat() -> ChatItem? {
-        return chat
-    }
-    
-    func set(chat: ChatItem) {
-        self.chat = chat
-    }
-    
     func getChatState() -> ChatState {
         return publicState(ofChatState: lastChatState)
+    }
+    
+    func getUnreadByOperatorTimestamp() -> Date? {
+        return unreadByOperatorTimestamp
+    }
+    
+    func getUnreadByVisitorTimestamp() -> Date? {
+        return unreadByVisitorTimestamp
     }
     
     func getLocationSettings() -> LocationSettings {
@@ -290,8 +295,8 @@ final class MessageStreamImpl: MessageStream {
         self.locationSettingsChangeListener = locationSettingsChangeListener
     }
     
-    func set(sessionOnlineStatusChangeListener: SessionOnlineStatusChangeListener) {
-        self.sessionOnlineStatusChangeListener = sessionOnlineStatusChangeListener
+    func set(onlineStatusChangeListener: OnlineStatusChangeListener) {
+        self.onlineStatusChangeListener = onlineStatusChangeListener
     }
     
     
@@ -316,8 +321,8 @@ final class MessageStreamImpl: MessageStream {
         }
     }
     
-    private func publicState(ofSessionOnlineState sessionOnlineState: SessionOnlineStatusItem) -> SessionOnlineStatus {
-        switch sessionOnlineState {
+    private func publicState(ofOnlineStatus onlineStatus: OnlineStatusItem) -> OnlineStatus {
+        switch onlineStatus {
         case .BUSY_OFFLINE:
             return .BUSY_OFFLINE
         case .BUSY_ONLINE:
@@ -338,7 +343,7 @@ final class MessageStreamImpl: MessageStream {
     private func openChatIfNecessary() {
         if (lastChatState.isClosed()
             || (invitationState == .OFFLINE_MESSAGE))
-            && (isChatIsOpening != true) {
+            && !isChatIsOpening {
             webimActions.startChat(withClientSideID: ClientSideID.generateClientSideID())
         }
     }
@@ -357,6 +362,7 @@ final class MessageStreamImpl: MessageStream {
             return 2
         default:
             print("Rating must be within from 1 to 5 range. Passed value: \(rating)")
+            
             return nil
         }
     }

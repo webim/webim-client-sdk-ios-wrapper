@@ -66,12 +66,13 @@ final class InternalUtils {
     static func parse(remoteNotification: [AnyHashable : Any]) -> WebimRemoteNotification? {
         if let apsFields = remoteNotification[WebimRemoteNotificationImpl.APNsField.APS.rawValue] as? [String : Any] {
             if let alertFields = apsFields[WebimRemoteNotificationImpl.APSField.ALERT.rawValue] as? [String : Any] {
-                return WebimRemoteNotificationImpl(withJSONDictionary: alertFields) as WebimRemoteNotification?
+                return WebimRemoteNotificationImpl(jsonDictionary: alertFields) as WebimRemoteNotification?
             } else {
                 return nil
             }
         } else {
             print("Unknown remote notification format.")
+            
             return nil
         }
     }

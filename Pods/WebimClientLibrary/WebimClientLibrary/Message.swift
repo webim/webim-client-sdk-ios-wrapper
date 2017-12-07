@@ -42,6 +42,8 @@ public protocol Message {
      Messages of the types `MessageType.FILE_FROM_OPERATOR` and `MessageType.FILE_FROM_VISITOR` can contain attachments.
      - important:
      Notice that this method may return nil even in the case of previously listed types of messages. E.g. if a file is being sent.
+     - SeeAlso:
+     `MessageAttachment` protocol.
      - returns:
      The attachment of the message.
      - Author:
@@ -54,7 +56,7 @@ public protocol Message {
     /**
      Messages of type `MessageType.ACTION_REQUEST` contain custom dictionary.
      - returns:
-     Dictionary which contains custom fields or nil if there's no such custom fields.
+     Dictionary which contains custom fields or `nil` if there's no such custom fields.
      - Author:
      Nikita Lazarev-Zubov
      - Copyright:
@@ -86,14 +88,16 @@ public protocol Message {
     func getOperatorID() -> String?
     
     /**
+     - important:
+     Versions 3.3.1 and earlier has the method called `getSenderAvatarFullURLString()` that returned `String?`.
      - returns:
-     URL of a sender's avatar.
+     URL of a sender's avatar or `nil` if one does not exist.
      - Author:
      Nikita Lazarev-Zubov
      - Copyright:
      2017 Webim
      */
-    func getSenderAvatarFullURLString() -> String?
+    func getSenderAvatarFullURL() -> URL?
     
     /**
      - returns:
@@ -127,15 +131,17 @@ public protocol Message {
     
     /**
      - returns:
-     Epoch time (in ms) the message was processed by the server.
+     Timestamp of the moment the message was processed by the server.
      - Author:
      Nikita Lazarev-Zubov
      - Copyright:
      2017 Webim
      */
-    func getTime() -> Int64
+    func getTime() -> Date
     
     /**
+     - SeeAlso:
+     `MessageType` enum.
      - returns:
      Type of a message.
      - Author:
@@ -192,6 +198,8 @@ public protocol MessageAttachment {
     func getFileName() -> String?
     
     /**
+     - SeeAlso:
+     `ImageInfo` protocol.
      - returns:
      If a file is an image, returns information about an image; in other cases returns nil.
      - Author:
@@ -212,7 +220,6 @@ public protocol MessageAttachment {
     func getSize() -> Int64?
     
     /**
-     A URL String of a file.
      - important:
      Notice that this URL is short-living and is tied to a session.
      - returns:
@@ -227,7 +234,7 @@ public protocol MessageAttachment {
 }
 
 /**
- Contains information about an image.
+ Provides information about an image.
  - SeeAlso:
  `MessageAttachment.getImageInfo()`
  - Author:
@@ -288,6 +295,8 @@ public protocol ImageInfo {
 
 // MARK: -
 /**
+ - SeeAlso:
+ `Message.getType()`
  - Author:
  Nikita Lazarev-Zubov
  - Copyright:

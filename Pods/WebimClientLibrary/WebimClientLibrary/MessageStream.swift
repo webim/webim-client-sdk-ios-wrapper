@@ -52,6 +52,26 @@ public protocol MessageStream {
     
     /**
      - returns:
+     Timestamp after which all chat messages are unread by operator (at the moment of last server update recieved.)
+     - Author:
+     Nikita Lazarev-Zubov
+     - Copyright:
+     2017 Webim
+     */
+    func getUnreadByOperatorTimestamp() -> Date?
+    
+    /**
+     - returns:
+     Timestamp after which all chat messages are unread by visitor (at the moment of last server update recieved.)
+     - Author:
+     Nikita Lazarev-Zubov
+     - Copyright:
+     2017 Webim
+     */
+    func getUnreadByVisitorTimestamp() -> Date?
+    
+    /**
+     - returns:
      Current LocationSettings of the MessageStream.
      - Author:
      Nikita Lazarev-Zubov
@@ -84,7 +104,7 @@ public protocol MessageStream {
     
     /**
      Rates an operator.
-     To get an ID of the current operator use `getCurrentOperator()`.
+     To get an ID of the current operator call `getCurrentOperator()`.
      - parameter id:
      ID of the operator to be rated.
      - parameter rate:
@@ -148,7 +168,7 @@ public protocol MessageStream {
     
     /**
      Sends a text message.
-     When calling this method, if there is an active `MessageTracker` (see new(messageTracker messageListener:)). `MessageListener.added(message newMessage:,after previousMessage:)`) with a message `MessageSendStatus.SENDING` in the status is also called.
+     When calling this method, if there is an active `MessageTracker` object (see new(messageTracker messageListener:)). `MessageListener.added(message newMessage:,after previousMessage:)`) with a message `MessageSendStatus.SENDING` in the status is also called.
      - parameter message:
      Text of the message.
      - parameter isHintQuestion:
@@ -185,7 +205,7 @@ public protocol MessageStream {
     
     /**
      Sends a file message.
-     When calling this method, if there is an active `MessageTracker` (see new(messageTracker messageListener:)), `MessageListener.added(message newMessage:,after previousMessage:)` with a message `MessageSendStatus.SENDING` in the status is also called.
+     When calling this method, if there is an active `MessageTracker` object (see new(messageTracker messageListener:)), `MessageListener.added(message newMessage:,after previousMessage:)` with a message `MessageSendStatus.SENDING` in the status is also called.
      - SeeAlso:
      Method could fail. See `SendFileError`.
      - parameter path:
@@ -282,10 +302,10 @@ public protocol MessageStream {
     
     /**
      Sets the listener of session status changes.
-     - parameter sessionOnlineStatusChangeListener:
-     `SessionOnlineStatusChangeListener` object.
+     - parameter onlineStatusChangeListener:
+     `OnlineStatusChangeListener` object.
      - SeeAlso:
-     `SessionOnlineStatusChangeListener`
+     `OnlineStatusChangeListener`
      - returns:
      No return value.
      - Author:
@@ -293,7 +313,7 @@ public protocol MessageStream {
      - Copyright:
      2017 Webim
      */
-    func set(sessionOnlineStatusChangeListener: SessionOnlineStatusChangeListener)
+    func set(onlineStatusChangeListener: OnlineStatusChangeListener)
     
 }
 
@@ -425,7 +445,7 @@ public protocol CurrentOperatorChangeListener {
 }
 
 /**
- Interface that provides methods for handling changes in MessageStream LocationSettings.
+ Interface that provides methods for handling changes in LocationSettings.
  - SeeAlso:
  `LocationSettings`
  - Author:
@@ -436,7 +456,7 @@ public protocol CurrentOperatorChangeListener {
 public protocol LocationSettingsChangeListener {
     
     /**
-     Method called by an app when new MessageStream LocationSettings received.
+     Method called by an app when new LocationSettings object is received.
      - parameter previousLocationSettings:
      Previous LocationSettings state.
      - parameter newLocationSettings:
@@ -481,18 +501,18 @@ public protocol OperatorTypingListener {
 /**
  Interface that provides methods for handling changes of session status.
  - SeeAlso:
- `MessageStream.set(sessionOnlineStatusChangeListener:)`
+ `MessageStream.set(onlineStatusChangeListener:)`
  - Author:
  Nikita Lazarev-Zubov
  - Copyright:
  2017 Webim
  */
-public protocol SessionOnlineStatusChangeListener {
+public protocol OnlineStatusChangeListener {
     
     /**
      Called when new session status is received.
      - SeeAlso:
-     `SessionOnlineStatus`
+     `OnlineStatus`
      - returns:
      No return value.
      - Author:
@@ -500,8 +520,8 @@ public protocol SessionOnlineStatusChangeListener {
      - Copyright:
      2017 Webim
      */
-    func changed(sessionOnlineStatus previousSessionOnlineStatus: SessionOnlineStatus,
-                 to newSessionOnlineStatus: SessionOnlineStatus)
+    func changed(onlineStatus previousOnlineStatus: OnlineStatus,
+                 to newOnlineStatus: OnlineStatus)
     
 }
 
@@ -598,7 +618,7 @@ public enum ChatState {
     
     /**
      The state is undefined.
-     This state is set as the initial when creating a new session, until the first response of the server containing the actual state is got. This state is also used as a fallback if SDK can not identify the server state (e.g. if the server has been updated to a version that contains new states).
+     This state is set as the initial when creating a new session, until the first response of the server containing the actual state is got. This state is also used as a fallback if WebimClientLibrary can not identify the server state (e.g. if the server has been updated to a version that contains new states).
      - Author:
      Nikita Lazarev-Zubov
      - Copyright:
@@ -641,18 +661,18 @@ public enum SendFileError: Error {
 }
 
 /**
- Session state possible cases.
+ Online state possible cases.
  - SeeAlso:
- `SessionOnlineStatusChangeListener`
+ `OnlineStatusChangeListener`
  - Author:
  Nikita Lazarev-Zubov
  - Copyright:
  2017 Webim
  */
-public enum SessionOnlineStatus {
+public enum OnlineStatus {
     
     /**
-     Means that a visitor is not able to send messages at all.
+     Means that visitor is not able to send messages at all.
      - Author:
      Nikita Lazarev-Zubov
      - Copyright:
@@ -661,7 +681,7 @@ public enum SessionOnlineStatus {
     case BUSY_OFFLINE
     
     /**
-     A visitor is able send offline messages, but the server can reject it.
+     Visitor is able send offline messages, but the server can reject it.
      - Author:
      Nikita Lazarev-Zubov
      - Copyright:
@@ -670,7 +690,7 @@ public enum SessionOnlineStatus {
     case BUSY_ONLINE
     
     /**
-     A visitor is able send offline messages.
+     Visitor is able send offline messages.
      - Author:
      Nikita Lazarev-Zubov
      - Copyright:
@@ -679,7 +699,7 @@ public enum SessionOnlineStatus {
     case OFFLINE
     
     /**
-     A visitor is able to send both online and offline messages.
+     Visitor is able to send both online and offline messages.
      - Author:
      Nikita Lazarev-Zubov
      - Copyright:
@@ -688,7 +708,7 @@ public enum SessionOnlineStatus {
     case ONLINE
     
     /**
-     The session has not received first session status yet or session status is not supported by this version of the library.
+     Session has not received first session status yet or session status is not supported by this version of the library.
      - Author:
      Nikita Lazarev-Zubov
      - Copyright:

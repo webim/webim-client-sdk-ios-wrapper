@@ -65,6 +65,16 @@ final class _ObjCMessageStream: NSObject {
         }
     }
     
+    @objc(getUnreadByOperatorTimestamp)
+    func getUnreadByOperatorTimestamp() -> Date? {
+        return messageStream.getUnreadByOperatorTimestamp()
+    }
+    
+    @objc(getUnreadByVisitorTimestamp)
+    func getUnreadByVisitorTimestamp() -> Date? {
+        return messageStream.getUnreadByVisitorTimestamp()
+    }
+    
     @objc(getLocationSettings)
     func getLocationSettings() -> _ObjCLocationSettings {
         return _ObjCLocationSettings(locationSettings: messageStream.getLocationSettings())
@@ -150,9 +160,9 @@ final class _ObjCMessageStream: NSObject {
         messageStream.set(operatorTypingListener: OperatorTypingListenerWrapper(operatorTypingListener: operatorTypingListener))
     }
     
-    @objc(setSessionOnlineStatusChangeListener:)
-    func set(sessionOnlineStatusChangeListener: _ObjCSessionOnlineStatusChangeListener) {
-        messageStream.set(sessionOnlineStatusChangeListener: SessionOnlineStatusChangeListenerWrapper(sessionOnlineStatusChangeListener: sessionOnlineStatusChangeListener))
+    @objc(setOnlineStatusChangeListener:)
+    func set(onlineStatusChangeListener: _ObjCOnlineStatusChangeListener) {
+        messageStream.set(onlineStatusChangeListener: OnlineStatusChangeListenerWrapper(onlineStatusChangeListener: onlineStatusChangeListener))
     }
     
 }
@@ -230,13 +240,13 @@ protocol _ObjCOperatorTypingListener {
     
 }
 
-// MARK: - SessionOnlineStatusChangeListener
+// MARK: - OnlineStatusChangeListener
 @objc(SessionOnlineStatusChangeListener)
-protocol _ObjCSessionOnlineStatusChangeListener {
+protocol _ObjCOnlineStatusChangeListener {
     
-    @objc(changedSessionOnlineStatus:to:)
-    func changed(sessionOnlineStatus previousSessionOnlineStatus: _ObjCSessionOnlineStatus,
-                 to newSessionOnlineStatus: _ObjCSessionOnlineStatus)
+    @objc(changedOnlineStatus:to:)
+    func changed(onlineStatus previousOnlineStatus: _ObjCOnlineStatus,
+                 to newOnlineStatus: _ObjCOnlineStatus)
     
 }
 
@@ -262,7 +272,7 @@ enum _ObjCSendFileError: Int, Error {
 
 // MARK: - SessionOnlineStatus
 @objc(SessionOnlineStatus)
-enum _ObjCSessionOnlineStatus: Int {
+enum _ObjCOnlineStatus: Int {
     case BUSY_OFFLINE
     case BUSY_ONLINE
     case OFFLINE
@@ -435,51 +445,51 @@ fileprivate final class OperatorTypingListenerWrapper: OperatorTypingListener {
     
 }
 
-// MARK: - SessionOnlineStatusChangeListener
-fileprivate final class SessionOnlineStatusChangeListenerWrapper: SessionOnlineStatusChangeListener {
+// MARK: - OnlineStatusChangeListener
+fileprivate final class OnlineStatusChangeListenerWrapper: OnlineStatusChangeListener {
     
     // MARK: - Properties
-    private (set) var sessionOnlineStatusChangeListener: _ObjCSessionOnlineStatusChangeListener
+    private (set) var onlineStatusChangeListener: _ObjCOnlineStatusChangeListener
     
     // MARK: - Initialization
-    init(sessionOnlineStatusChangeListener: _ObjCSessionOnlineStatusChangeListener) {
-        self.sessionOnlineStatusChangeListener = sessionOnlineStatusChangeListener
+    init(onlineStatusChangeListener: _ObjCOnlineStatusChangeListener) {
+        self.onlineStatusChangeListener = onlineStatusChangeListener
     }
     
     // MARK: - Methods
     // MARK: SessionOnlineStatusChangeListener protocol methods
-    func changed(sessionOnlineStatus previousSessionOnlineStatus: SessionOnlineStatus,
-                 to newSessionOnlineStatus: SessionOnlineStatus) {
-        var previousObjCSessionOnlineStatus: _ObjCSessionOnlineStatus?
-        switch previousSessionOnlineStatus {
+    func changed(onlineStatus previousOnlineStatus: OnlineStatus,
+                 to newOnlineStatus: OnlineStatus) {
+        var previousObjCOnlineStatus: _ObjCOnlineStatus?
+        switch previousOnlineStatus {
         case .BUSY_OFFLINE:
-            previousObjCSessionOnlineStatus = .BUSY_OFFLINE
+            previousObjCOnlineStatus = .BUSY_OFFLINE
         case .BUSY_ONLINE:
-            previousObjCSessionOnlineStatus = .BUSY_ONLINE
+            previousObjCOnlineStatus = .BUSY_ONLINE
         case .OFFLINE:
-            previousObjCSessionOnlineStatus = .OFFLINE
+            previousObjCOnlineStatus = .OFFLINE
         case .ONLINE:
-            previousObjCSessionOnlineStatus = .ONLINE
+            previousObjCOnlineStatus = .ONLINE
         case .UNKNOWN:
-            previousObjCSessionOnlineStatus = .UNKNOWN
+            previousObjCOnlineStatus = .UNKNOWN
         }
         
-        var newObjCSessionOnlineStatus: _ObjCSessionOnlineStatus?
-        switch newSessionOnlineStatus {
+        var newObjCOnlineStatus: _ObjCOnlineStatus?
+        switch newOnlineStatus {
         case .BUSY_OFFLINE:
-            newObjCSessionOnlineStatus = .BUSY_OFFLINE
+            newObjCOnlineStatus = .BUSY_OFFLINE
         case .BUSY_ONLINE:
-            newObjCSessionOnlineStatus = .BUSY_ONLINE
+            newObjCOnlineStatus = .BUSY_ONLINE
         case .OFFLINE:
-            newObjCSessionOnlineStatus = .OFFLINE
+            newObjCOnlineStatus = .OFFLINE
         case .ONLINE:
-            newObjCSessionOnlineStatus = .ONLINE
+            newObjCOnlineStatus = .ONLINE
         case .UNKNOWN:
-            newObjCSessionOnlineStatus = .UNKNOWN
+            newObjCOnlineStatus = .UNKNOWN
         }
         
-        sessionOnlineStatusChangeListener.changed(sessionOnlineStatus: previousObjCSessionOnlineStatus!,
-                                                  to: newObjCSessionOnlineStatus!)
+        onlineStatusChangeListener.changed(onlineStatus: previousObjCOnlineStatus!,
+                                           to: newObjCOnlineStatus!)
     }
     
     

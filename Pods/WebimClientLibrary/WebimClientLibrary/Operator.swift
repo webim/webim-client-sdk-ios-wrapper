@@ -52,7 +52,7 @@ public protocol Operator {
     
     /**
      - returns:
-     A display name of the operator.
+     Display name of the operator.
      - Author:
      Nikita Lazarev-Zubov
      - Copyright:
@@ -62,12 +62,12 @@ public protocol Operator {
     
     /**
      - returns:
-     A URL String of the operator’s avatar.
+     URL of the operator’s avatar or `nil` if does not exist.
      - Author:
      Nikita Lazarev-Zubov
      - Copyright:
      2017 Webim
      */
-    func getAvatarURLString() -> String?
+    func getAvatarURL() -> URL?
     
 }
