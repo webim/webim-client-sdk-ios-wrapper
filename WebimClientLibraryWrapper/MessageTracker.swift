@@ -51,7 +51,7 @@ final class _ObjCMessageTracker: NSObject {
         try messageTracker.getLastMessages(byLimit: limitOfMessages) { messages in
             var objCMessages = [_ObjCMessage]()
             for message in messages {
-                objCMessages.append(_ObjCMessage(message: message)!)
+                objCMessages.append(_ObjCMessage(message: message))
             }
             completion(objCMessages)
         }
@@ -63,7 +63,7 @@ final class _ObjCMessageTracker: NSObject {
         try messageTracker.getNextMessages(byLimit: limitOfMessages) { messages in
             var objCMessages = [_ObjCMessage]()
             for message in messages {
-                objCMessages.append(_ObjCMessage(message: message)!)
+                objCMessages.append(_ObjCMessage(message: message))
             }
             completion(objCMessages)
         }
@@ -74,7 +74,7 @@ final class _ObjCMessageTracker: NSObject {
         try messageTracker.getAllMessages() { messages in
             var objCMessages = [_ObjCMessage]()
             for message in messages {
-                objCMessages.append(_ObjCMessage(message: message)!)
+                objCMessages.append(_ObjCMessage(message: message))
             }
             completion(objCMessages)
         }
@@ -82,7 +82,7 @@ final class _ObjCMessageTracker: NSObject {
     
     @objc(resetToMessage:error:)
     func resetTo(message: _ObjCMessage) throws {
-        try messageTracker.resetTo(message: message.message!)
+        try messageTracker.resetTo(message: message.message)
     }
     
     @objc(destroy:)

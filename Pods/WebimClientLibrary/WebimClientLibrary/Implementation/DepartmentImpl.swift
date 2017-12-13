@@ -1,8 +1,8 @@
 //
-//  ProvidedAuthorizationTokenStateListener.swift
-//  ObjectiveCExample
+//  DepartmentImpl.swift
+//  WebimClientLibrary
 //
-//  Created by Nikita Lazarev-Zubov on 07.12.17.
+//  Created by Nikita Lazarev-Zubov on 12.12.17.
 //  Copyright © 2017 Webim. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,32 +25,57 @@
 //
 
 import Foundation
-import WebimClientLibrary
 
-@objc(ProvidedAuthorizationTokenStateListener)
-protocol _ObjCProvidedAuthorizationTokenStateListener {
-    
-    @objc(updateProvidedAuthorizationToken:)
-    func update(providedAuthorizationToken: String)
-    
-}
-
-// MARK: - Protocols' wrappers
-// MARK: - ProvidedAuthorizationTokenStateListener
-final class ProvidedAuthorizationTokenStateListenerWrapper: ProvidedAuthorizationTokenStateListener {
+final class DepartmentImpl: Department {
     
     // MARK: - Properties
-    private (set) var providedAuthorizationTokenStateListener: _ObjCProvidedAuthorizationTokenStateListener
+    let departmentOnlineStatus: DepartmentOnlineStatus
+    let key: String
+    let name: String
+    let order: Int
+    var localizedNames: [String : String]?
+    var logo: URL?
     
     // MARK: - Initialization
-    init(providedAuthorizationTokenStateListener: _ObjCProvidedAuthorizationTokenStateListener) {
-        self.providedAuthorizationTokenStateListener = providedAuthorizationTokenStateListener
+    init(key: String,
+         name: String,
+         departmentOnlineStatus: DepartmentOnlineStatus,
+         order: Int,
+         localizedNames: [String : String]? = nil,
+         logo: URL? = nil) {
+        self.key = key
+        self.name = name
+        self.departmentOnlineStatus = departmentOnlineStatus
+        self.order = order
+        self.localizedNames = localizedNames
+        self.logo = logo
     }
     
     // MARK: - Methods
-    // MARK: ProvidedAuthorizationTokenStateListener protocol methods
-    func update(providedAuthorizationToken: String) {
-        providedAuthorizationTokenStateListener.update(providedAuthorizationToken: providedAuthorizationToken)
+    // MARK: Department protocol methods
+    
+    func getKey() -> String {
+        return key
+    }
+    
+    func getName() -> String {
+        return name
+    }
+    
+    func getDepartmentOnlineStatus() -> DepartmentOnlineStatus {
+        return departmentOnlineStatus
+    }
+    
+    func getOrder() -> Int {
+        return order
+    }
+    
+    func getLocalizedNames() -> [String : String]? {
+        return localizedNames
+    }
+    
+    func getLogoURL() -> URL? {
+        return logo
     }
     
 }

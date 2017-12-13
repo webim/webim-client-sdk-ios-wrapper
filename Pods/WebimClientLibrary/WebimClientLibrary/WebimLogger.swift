@@ -1,8 +1,8 @@
 //
-//  ProvidedAuthorizationTokenStateListener.swift
-//  ObjectiveCExample
+//  WebimLogger.swift
+//  Cosmos
 //
-//  Created by Nikita Lazarev-Zubov on 07.12.17.
+//  Created by Nikita Lazarev-Zubov on 08.12.17.
 //  Copyright © 2017 Webim. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,32 +25,26 @@
 //
 
 import Foundation
-import WebimClientLibrary
 
-@objc(ProvidedAuthorizationTokenStateListener)
-protocol _ObjCProvidedAuthorizationTokenStateListener {
+/**
+ Protocol that provides methods for implementing custom WebimClientLibrary network requests logging.
+ It can be useful for debugging production releases if debug logs are not available.
+ - Author:
+ Nikita Lazarev-Zubov
+ - Copyright:
+ 2017 Webim
+ */
+public protocol WebimLogger {
     
-    @objc(updateProvidedAuthorizationToken:)
-    func update(providedAuthorizationToken: String)
-    
-}
-
-// MARK: - Protocols' wrappers
-// MARK: - ProvidedAuthorizationTokenStateListener
-final class ProvidedAuthorizationTokenStateListenerWrapper: ProvidedAuthorizationTokenStateListener {
-    
-    // MARK: - Properties
-    private (set) var providedAuthorizationTokenStateListener: _ObjCProvidedAuthorizationTokenStateListener
-    
-    // MARK: - Initialization
-    init(providedAuthorizationTokenStateListener: _ObjCProvidedAuthorizationTokenStateListener) {
-        self.providedAuthorizationTokenStateListener = providedAuthorizationTokenStateListener
-    }
-    
-    // MARK: - Methods
-    // MARK: ProvidedAuthorizationTokenStateListener protocol methods
-    func update(providedAuthorizationToken: String) {
-        providedAuthorizationTokenStateListener.update(providedAuthorizationToken: providedAuthorizationToken)
-    }
+    /**
+     Method which is called after new WebimClientLibrary network request log entry came out.
+     - parameter entry:
+     New WebimClientLibrary network request log entry.
+     - Author:
+     Nikita Lazarev-Zubov
+     - Copyright:
+     2017 Webim
+     */
+    func log(entry: String)
     
 }

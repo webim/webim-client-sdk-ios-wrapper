@@ -118,10 +118,8 @@ final class _ObjCSessionBuilder: NSObject {
     @objc(setProvidedAuthorizationTokenStateListener:providedAuthorizationToken:)
     func set(providedAuthorizationTokenStateListener: _ObjCProvidedAuthorizationTokenStateListener,
              providedAuthorizationToken: String? = nil) -> _ObjCSessionBuilder {
-        if let providedAuthorizationTokenStateListenerWrapper = ProvidedAuthorizationTokenStateListenerWrapper(providedAuthorizationTokenStateListener: providedAuthorizationTokenStateListener) {
-            sessionBuilder = sessionBuilder.set(providedAuthorizationTokenStateListener: providedAuthorizationTokenStateListenerWrapper,
-                                                providedAuthorizationToken: providedAuthorizationToken)
-        }
+        sessionBuilder = sessionBuilder.set(providedAuthorizationTokenStateListener: ProvidedAuthorizationTokenStateListenerWrapper(providedAuthorizationTokenStateListener: providedAuthorizationTokenStateListener),
+                                            providedAuthorizationToken: providedAuthorizationToken)
         
         return self
     }

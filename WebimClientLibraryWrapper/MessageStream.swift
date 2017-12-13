@@ -45,6 +45,24 @@ final class _ObjCMessageStream: NSObject {
     
     // MARK: - Methods
     
+    @objc(getVisitSessionState)
+    func getVisitSessionState() -> _ObjCVisitSessionState {
+        switch messageStream.getVisitSessionState() {
+        case .CHAT:
+            return .CHAT
+        case .DEPARTMENT_SELECTION:
+            return .DEPARTMENT_SELECTION
+        case .IDLE:
+            return .IDLE
+        case .IDLE_AFTER_CHAT:
+            return .IDLE_AFTER_CHAT
+        case .OFFLINE_MESSAGE:
+            return .OFFLINE_MESSAGE
+        case .UNKNOWN:
+            return .UNKNOWN
+        }
+    }
+    
     @objc(getChatState)
     func getChatState() -> _ObjCChatState {
         switch messageStream.getChatState() {
@@ -75,6 +93,21 @@ final class _ObjCMessageStream: NSObject {
         return messageStream.getUnreadByVisitorTimestamp()
     }
     
+    @objc(getDepartmentList)
+    func getDepartmentList() -> [_ObjCDepartment]? {
+        if let departmentList = messageStream.getDepartmentList() {
+            var objCDepartmentList = [_ObjCDepartment]()
+            for department in departmentList {
+                let objCDepartment = _ObjCDepartment(department: department)
+                objCDepartmentList.append(objCDepartment)
+            }
+            
+            return objCDepartmentList
+        }
+        
+        return nil
+    }
+    
     @objc(getLocationSettings)
     func getLocationSettings() -> _ObjCLocationSettings {
         return _ObjCLocationSettings(locationSettings: messageStream.getLocationSettings())
@@ -82,7 +115,11 @@ final class _ObjCMessageStream: NSObject {
     
     @objc(getCurrentOperator)
     func getCurrentOperator() -> _ObjCOperator? {
-        return _ObjCOperator(operator: messageStream.getCurrentOperator())
+        if let `operator` = messageStream.getCurrentOperator() {
+            return _ObjCOperator(operator: `operator`)
+        }
+        
+        return nil
     }
     
     @objc(getLastRatingOfOperatorWithID:)
@@ -93,13 +130,18 @@ final class _ObjCMessageStream: NSObject {
     @objc(rateOperatorWithID:byRating:error:)
     func rateOperatorWith(id: String,
                           byRating rating: Int) throws {
-        try messageStream .rateOperatorWith(id: id,
-                                            byRating: rating)
+        try messageStream.rateOperatorWith(id: id,
+                                           byRating: rating)
     }
     
     @objc(startChat:)
     func startChat() throws {
         try messageStream.startChat()
+    }
+    
+    @objc(startChatWithDepartmentKey:error:)
+    func startChat(departmentKey: String) throws {
+        try messageStream.startChat(departmentKey: departmentKey)
     }
     
     @objc(closeChat:)
@@ -132,12 +174,17 @@ final class _ObjCMessageStream: NSObject {
         return try messageStream.send(file: file,
                                       filename: filename,
                                       mimeType: mimeType,
-                                      completionHandler: SendFileCompletionHandlerWrapper(sendFileCompletionHandler: completionHandler))
+                                      completionHandler: ((completionHandler == nil) ? nil : SendFileCompletionHandlerWrapper(sendFileCompletionHandler: completionHandler!)))
     }
     
     @objc(newMessageTrackerWithMessageListener:error:)
     func new(messageTracker messageListener: _ObjCMessageListener) throws -> _ObjCMessageTracker {
         return try _ObjCMessageTracker(messageTracker: messageStream.new(messageTracker: MessageListenerWrapper(messageListener: messageListener)))
+    }
+    
+    @objc(setVisitSessionStateListener:)
+    func set(visitSessionStateListener: _ObjCVisitSessionStateListener) {
+        messageStream.set(visitSessionStateListener: VisitSessionStateListenerWrapper(visitSessionStateListener: visitSessionStateListener))
     }
     
     @objc(setChatStateListener:)
@@ -148,6 +195,11 @@ final class _ObjCMessageStream: NSObject {
     @objc(setCurrentOperatorChangeListener:)
     func set(currentOperatorChangeListener: _ObjCCurrentOperatorChangeListener) {
         messageStream.set(currentOperatorChangeListener: CurrentOperatorChangeListenerWrapper(currentOperatorChangeListener: currentOperatorChangeListener))
+    }
+    
+    @objc(setDepartmentListChangeListener:)
+    func set(departmentListChangeListener: _ObjCDepartmentListChangeListener) {
+        messageStream.set(departmentListChangeListener: DepartmentListChangeListenerWrapper(departmentListChangeListener: departmentListChangeListener))
     }
     
     @objc(LocationSettingsChangeListener:)
@@ -201,11 +253,21 @@ protocol _ObjCSendFileCompletionHandler {
     
 }
 
+// MARK: - VisitSessionStateListener
+@objc(VisitSessionStateListener)
+protocol _ObjCVisitSessionStateListener {
+    
+    @objc(changedState:to:)
+    func changed(state previousState: _ObjCVisitSessionState,
+                 to newState: _ObjCVisitSessionState)
+    
+}
+
 // MARK: - ChatStateListener
 @objc(ChatStateListener)
 protocol _ObjCChatStateListener {
     
-    @objc(ChangedState:To:)
+    @objc(changedState:to:)
     func changed(state previousState: _ObjCChatState,
                  to newState: _ObjCChatState)
     
@@ -218,6 +280,15 @@ protocol _ObjCCurrentOperatorChangeListener {
     @objc(changedOperator:to:)
     func changed(operator previousOperator: _ObjCOperator,
                  to newOperator: _ObjCOperator?)
+    
+}
+
+// MARK: - DepartmentListChangeListener
+@objc(DepartmentListChangeListener)
+protocol _ObjCDepartmentListChangeListener {
+    
+    @objc(receivedDepartmentList:)
+    func received(departmentList: [_ObjCDepartment])
     
 }
 
@@ -270,13 +341,24 @@ enum _ObjCSendFileError: Int, Error {
     case FILE_TYPE_NOT_ALLOWED
 }
 
-// MARK: - SessionOnlineStatus
-@objc(SessionOnlineStatus)
+// MARK: - OnlineStatus
+@objc(OnlineStatus)
 enum _ObjCOnlineStatus: Int {
     case BUSY_OFFLINE
     case BUSY_ONLINE
     case OFFLINE
     case ONLINE
+    case UNKNOWN
+}
+
+// MARK: - VisitSessionState
+@objc(VisitSessionState)
+enum _ObjCVisitSessionState: Int {
+    case CHAT
+    case DEPARTMENT_SELECTION
+    case IDLE
+    case IDLE_AFTER_CHAT
+    case OFFLINE_MESSAGE
     case UNKNOWN
 }
 
@@ -287,16 +369,12 @@ enum _ObjCOnlineStatus: Int {
 fileprivate final class SendFileCompletionHandlerWrapper: SendFileCompletionHandler {
     
     // MARK: - Properties
-    private (set) var sendFileCompletionHandler: _ObjCSendFileCompletionHandler?
+    private (set) var sendFileCompletionHandler: _ObjCSendFileCompletionHandler
     
     
     // MARK: - Initialization
-    init?(sendFileCompletionHandler: _ObjCSendFileCompletionHandler?) {
-        if let sendFileCompletionHandler = sendFileCompletionHandler {
-            self.sendFileCompletionHandler = sendFileCompletionHandler
-        } else {
-            return nil
-        }
+    init(sendFileCompletionHandler: _ObjCSendFileCompletionHandler) {
+        self.sendFileCompletionHandler = sendFileCompletionHandler
     }
     
     
@@ -304,25 +382,74 @@ fileprivate final class SendFileCompletionHandlerWrapper: SendFileCompletionHand
     // MARK: SendFileCompletionHandler protocol methods
     
     func onSuccess(messageID: String) {
-        if let sendFileCompletionHandler = sendFileCompletionHandler {
-            sendFileCompletionHandler.onSuccess(messageID: messageID)
-        }
+        sendFileCompletionHandler.onSuccess(messageID: messageID)
     }
     
     func onFailure(messageID: String,
                    error: SendFileError) {
-        if let sendFileCompletionHandler = sendFileCompletionHandler {
-            var objCError: _ObjCSendFileError?
-            switch error {
-            case .FILE_SIZE_EXCEEDED:
-                objCError = .FILE_SIZE_EXCEEDED
-            case .FILE_TYPE_NOT_ALLOWED:
-                objCError = .FILE_TYPE_NOT_ALLOWED
-            }
-            
-            sendFileCompletionHandler.onFailure(messageID: messageID,
-                                                error: objCError!)
+        var objCError: _ObjCSendFileError?
+        switch error {
+        case .FILE_SIZE_EXCEEDED:
+            objCError = .FILE_SIZE_EXCEEDED
+        case .FILE_TYPE_NOT_ALLOWED:
+            objCError = .FILE_TYPE_NOT_ALLOWED
         }
+        
+        sendFileCompletionHandler.onFailure(messageID: messageID,
+                                            error: objCError!)
+    }
+    
+}
+
+// MARK: - VisitSessionStateListener
+fileprivate final class VisitSessionStateListenerWrapper: VisitSessionStateListener {
+    
+    // MARK: - Properties
+    private (set) var visitSessionStateListener: _ObjCVisitSessionStateListener
+    
+    // MARK: - Initialization
+    init(visitSessionStateListener: _ObjCVisitSessionStateListener) {
+        self.visitSessionStateListener = visitSessionStateListener
+    }
+    
+    // MARK: - Methods
+    // MARK: VisitSessionStateListener protocol methods
+    func changed(state previousState: VisitSessionState,
+                 to newState: VisitSessionState) {
+        var previousObjCVisitSessionState: _ObjCVisitSessionState?
+        switch previousState {
+        case .CHAT:
+            previousObjCVisitSessionState = .CHAT
+        case .DEPARTMENT_SELECTION:
+            previousObjCVisitSessionState = .DEPARTMENT_SELECTION
+        case .IDLE:
+            previousObjCVisitSessionState = .IDLE
+        case .IDLE_AFTER_CHAT:
+            previousObjCVisitSessionState = .IDLE_AFTER_CHAT
+        case .OFFLINE_MESSAGE:
+            previousObjCVisitSessionState = .OFFLINE_MESSAGE
+        case .UNKNOWN:
+            previousObjCVisitSessionState = .UNKNOWN
+        }
+        
+        var newObjCVisitSessionState: _ObjCVisitSessionState?
+        switch previousState {
+        case .CHAT:
+            newObjCVisitSessionState = .CHAT
+        case .DEPARTMENT_SELECTION:
+            newObjCVisitSessionState = .DEPARTMENT_SELECTION
+        case .IDLE:
+            newObjCVisitSessionState = .IDLE
+        case .IDLE_AFTER_CHAT:
+            newObjCVisitSessionState = .IDLE_AFTER_CHAT
+        case .OFFLINE_MESSAGE:
+            newObjCVisitSessionState = .OFFLINE_MESSAGE
+        case .UNKNOWN:
+            newObjCVisitSessionState = .UNKNOWN
+        }
+        
+        visitSessionStateListener.changed(state: previousObjCVisitSessionState!,
+                                          to: newObjCVisitSessionState!)
     }
     
 }
@@ -399,8 +526,33 @@ fileprivate final class CurrentOperatorChangeListenerWrapper: CurrentOperatorCha
     // MARK: - CurrentOperatorChangeListener protocol methods
     func changed(operator previousOperator: Operator,
                  to newOperator: Operator?) {
-        currentOperatorChangeListener.changed(operator: _ObjCOperator(operator: previousOperator)!,
-                                              to: _ObjCOperator(operator: newOperator))
+        currentOperatorChangeListener.changed(operator: _ObjCOperator(operator: previousOperator),
+                                              to: (newOperator == nil) ? nil : _ObjCOperator(operator: newOperator!))
+    }
+    
+}
+
+// MARK: - DepartmentListChangeListener
+fileprivate final class DepartmentListChangeListenerWrapper: DepartmentListChangeListener {
+    
+    // MARK: - Properties
+    private (set) var departmentListChangeListener: _ObjCDepartmentListChangeListener
+    
+    // MARK: - Initialization
+    init(departmentListChangeListener: _ObjCDepartmentListChangeListener) {
+        self.departmentListChangeListener = departmentListChangeListener
+    }
+    
+    // MARK: - Methods
+    // MARK: DepartmentListChangeListener
+    func received(departmentList: [Department]) {
+        var objCDepartmentList = [_ObjCDepartment]()
+        for department in departmentList {
+            let objCDepartment = _ObjCDepartment(department: department)
+            objCDepartmentList.append(objCDepartment)
+        }
+        
+        departmentListChangeListener.received(departmentList: objCDepartmentList)
     }
     
 }

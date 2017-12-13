@@ -34,28 +34,28 @@ import WebimClientLibrary
 final class _ObjCMessage: NSObject {
     
     // MARK: - Properties
-    private (set) var message: Message?
+    private (set) var message: Message
     
     
     // MARK: - Initialization
-    init?(message: Message?) {
-        if let message = message {
-            self.message = message
-        } else {
-            return nil
-        }
+    init(message: Message) {
+        self.message = message
     }
     
     // MARK: - Methods
     
     @objc(getAttachment)
     func getAttachment() -> _ObjCMessageAttachment? {
-        return _ObjCMessageAttachment(messageAttachment: message?.getAttachment())
+        if let attachment = message.getAttachment() {
+            return _ObjCMessageAttachment(messageAttachment: attachment)
+        }
+        
+        return nil
     }
     
     @objc(getData)
     func getData() -> [String : Any]? {
-        if let data = message?.getData() {
+        if let data = message.getData() {
             var objCData = [String : Any]()
             for key in data.keys {
                 if let value = data[key] {
@@ -70,18 +70,18 @@ final class _ObjCMessage: NSObject {
     }
     
     @objc(getID)
-    func getID() -> String? {
-        return message?.getID()
+    func getID() -> String {
+        return message.getID()
     }
     
     @objc(getOperatorID)
     func getOperatorID() -> String? {
-        return message?.getOperatorID()
+        return message.getOperatorID()
     }
     
     @objc(getSenderAvatarFullURL)
     func getSenderAvatarFullURL() -> URL? {
-        return message?.getSenderAvatarFullURL()
+        return message.getSenderAvatarFullURL()
     }
     
     @objc(getSenderName)
@@ -91,60 +91,49 @@ final class _ObjCMessage: NSObject {
     
     @objc(getSendStatus)
     func getSendStatus() -> _ObjCMessageSendStatus {
-        if let messageSendStatus = message?.getSendStatus() {
-            switch messageSendStatus {
-            case .SENDING:
-                return .SENDING
-            case .SENT:
-                return .SENT
-            }
-        } else {
-            return .NONE
+        switch message.getSendStatus() {
+        case .SENDING:
+            return .SENDING
+        case .SENT:
+            return .SENT
         }
     }
     
     @objc(getText)
-    func getText() -> String? {
-        return message?.getText()
+    func getText() -> String {
+        return message.getText()
     }
     
     @objc(getTime)
-    func getTime() -> Date? {
-        return message?.getTime() as Date?
+    func getTime() -> Date {
+        return message.getTime()
     }
     
     @objc(getType)
     func getType() -> _ObjCMessageType {
-        if let messageType = message?.getType() {
-            switch messageType {
-            case .ACTION_REQUEST:
-                return .ACTION_REQUEST
-            case .FILE_FROM_OPERATOR:
-                return .FILE_FROM_OPERATOR
-            case .FILE_FROM_VISITOR:
-                return .FILE_FROM_VISITOR
-            case .INFO:
-                return .INFO
-            case .OPERATOR:
-                return .OPERATOR
-            case .OPERATOR_BUSY:
-                return .OPERATOR_BUSY
-            case .VISITOR:
-                return .VISITOR
-            }
-        } else {
-            return .NONE
+        switch message.getType() {
+        case .ACTION_REQUEST:
+            return .ACTION_REQUEST
+        case .CONTACTS_REQUEST:
+            return .CONTACTS_REQUEST
+        case .FILE_FROM_OPERATOR:
+            return .FILE_FROM_OPERATOR
+        case .FILE_FROM_VISITOR:
+            return .FILE_FROM_VISITOR
+        case .INFO:
+            return .INFO
+        case .OPERATOR:
+            return .OPERATOR
+        case .OPERATOR_BUSY:
+            return .OPERATOR_BUSY
+        case .VISITOR:
+            return .VISITOR
         }
     }
     
     @objc(isEqualTo:)
     func isEqual(to message: _ObjCMessage) -> Bool {
-        if let firstInternalMessage = self.message,
-            let secondInternalMessage = message.message {
-            return firstInternalMessage.isEqual(to: secondInternalMessage)
-        } else {
-            return false
-        }
+        return self.message.isEqual(to: message.message)
     }
     
 }
@@ -154,16 +143,12 @@ final class _ObjCMessage: NSObject {
 final class _ObjCMessageAttachment: NSObject {
     
     // MARK: - Properties
-    private (set) var messageAttachment: MessageAttachment?
+    private (set) var messageAttachment: MessageAttachment
     
     
     // MARK: - Initialization
-    init?(messageAttachment: MessageAttachment?) {
-        if let messageAttachment = messageAttachment {
-            self.messageAttachment = messageAttachment
-        } else {
-            return nil
-        }
+    init(messageAttachment: MessageAttachment) {
+        self.messageAttachment = messageAttachment
     }
     
     
@@ -171,27 +156,31 @@ final class _ObjCMessageAttachment: NSObject {
     
     @objc(getContentType)
     func getContentType() -> String? {
-        return messageAttachment?.getContentType()
+        return messageAttachment.getContentType()
     }
     
     @objc(getFileName)
     func getFileName() -> String? {
-        return messageAttachment?.getFileName()
+        return messageAttachment.getFileName()
     }
     
     @objc(getImageInfo)
     func getImageInfo() -> _ObjCImageInfo? {
-        return _ObjCImageInfo(imageInfo: messageAttachment?.getImageInfo())
+        if let imageInfo = messageAttachment.getImageInfo() {
+            return _ObjCImageInfo(imageInfo: imageInfo)
+        }
+        
+        return nil
     }
     
     @objc(getSize)
     func getSize() -> NSNumber? {
-        return messageAttachment?.getSize() as NSNumber?
+        return messageAttachment.getSize() as NSNumber?
     }
     
     @objc(getURLString)
-    func getURLString() -> String? {
-        return messageAttachment?.getURLString()
+    func getURLString() -> URL? {
+        return messageAttachment.getURL()
     }
     
 }
@@ -201,34 +190,30 @@ final class _ObjCMessageAttachment: NSObject {
 final class _ObjCImageInfo: NSObject {
     
     // MARK: - Properties
-    private (set) var imageInfo: ImageInfo?
+    private (set) var imageInfo: ImageInfo
     
     
     // MARK: - Initialization
-    init?(imageInfo: ImageInfo?) {
-        if let imageInfo = imageInfo {
-            self.imageInfo = imageInfo
-        } else {
-            return nil
-        }
+    init(imageInfo: ImageInfo) {
+        self.imageInfo = imageInfo
     }
     
     
     // MARK: - Methods
     
     @objc(getThumbURLString)
-    func getThumbURLString() -> String? {
-        return imageInfo?.getThumbURLString()
+    func getThumbURLString() -> URL {
+        return imageInfo.getThumbURL()
     }
     
     @objc(getHeight)
     func getHeight() -> NSNumber? {
-        return imageInfo?.getHeight() as NSNumber?
+        return imageInfo.getHeight() as NSNumber?
     }
     
     @objc(getWidth)
     func getWidth() -> NSNumber? {
-        return imageInfo?.getWidth() as NSNumber?
+        return imageInfo.getWidth() as NSNumber?
     }
     
 }
@@ -237,20 +222,19 @@ final class _ObjCImageInfo: NSObject {
 // MARK: - MessageType
 @objc(MessageType)
 enum _ObjCMessageType: Int {
-    case NONE = 0
-    case ACTION_REQUEST = 1
-    case FILE_FROM_OPERATOR = 2
-    case FILE_FROM_VISITOR = 3
-    case INFO = 4
-    case OPERATOR = 5
-    case OPERATOR_BUSY = 6
-    case VISITOR = 7
+    case ACTION_REQUEST
+    case CONTACTS_REQUEST
+    case FILE_FROM_OPERATOR
+    case FILE_FROM_VISITOR
+    case INFO
+    case OPERATOR
+    case OPERATOR_BUSY
+    case VISITOR
 }
 
 // MARK: - MessageSendStatus
 @objc(MessageSendStatus)
 enum _ObjCMessageSendStatus: Int {
-    case NONE = 0
-    case SENDING = 1
-    case SENT = 2
+    case SENDING
+    case SENT
 }

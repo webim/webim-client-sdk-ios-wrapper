@@ -34,16 +34,12 @@ import WebimClientLibrary
 final class _ObjCOperator: NSObject {
     
     // MARK: - Private
-    private (set) var `operator`: Operator?
+    private (set) var `operator`: Operator
     
     
     // MARK: - Initialization
-    init?(operator: Operator?) {
-        if let `operator` = `operator` {
-            self.`operator` = `operator`
-        } else {
-            return nil
-        }
+    init(operator: Operator) {
+        self.`operator` = `operator`
     }
     
     
@@ -51,17 +47,17 @@ final class _ObjCOperator: NSObject {
     
     @objc(getID)
     func getID() -> String? {
-        return `operator`?.getID()
+        return `operator`.getID()
     }
     
     @objc(getName)
     func getName() -> String? {
-        return `operator`?.getName()
+        return `operator`.getName()
     }
     
     @objc(getAvatarURL)
     func getAvatarURL() -> URL? {
-        return `operator`?.getAvatarURL()
+        return `operator`.getAvatarURL()
     }
     
 }

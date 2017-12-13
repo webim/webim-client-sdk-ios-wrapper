@@ -59,12 +59,16 @@ final class _ObjCWebimRemoteNotification: NSObject {
     
     @objc(getEvent)
     func getEvent() -> _ObjCNotificationEvent {
-        switch webimRemoteNotification.getEvent() {
-        case .ADD:
-            return .ADD
-        case .DELETE:
-            return .DELETE
+        if let event = webimRemoteNotification.getEvent() {
+            switch event {
+            case .ADD:
+                return .ADD
+            case .DELETE:
+                return .DELETE
+            }
         }
+        
+        return .NONE
     }
     
     @objc(getParameters)
@@ -86,6 +90,7 @@ enum _ObjCNotificationType: Int {
 // MARK: - NotificationEvent
 @objc(NotificationEvent)
 enum _ObjCNotificationEvent: Int {
+    case NONE
     case ADD
     case DELETE
 }

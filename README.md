@@ -6,13 +6,15 @@ Objective-C-friendly wrapper around WebimClientLibrary 3.
 
 For the first you should have _WebimClientLibrary_ inside your project.
 
-Then just copy ten .swift-files from **WebimClientLibraryWrapper** directory to your Objective-C-based project (in alphabetical order):
+Then just copy .swift-files from **WebimClientLibraryWrapper** directory to your Objective-C-based project (in alphabetical order):
+* **Department.swift**
 * **FatalErrorHandler.swift**,
 * **Message.swift**,
 * **MessageListener.swift**,
 * **MessageStream.swift**,
 * **MessageTracker.swit**,
 * **Operator.swift**,
+* **ProvidedAuthorizationTokenStateListener.swift**
 * **Webim.swift**,
 * **WebimError.swift**,
 * **WebimRemoteNotification.swift**,
