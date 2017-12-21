@@ -140,8 +140,20 @@ final class _ObjCMessageStream: NSObject {
     }
     
     @objc(startChatWithDepartmentKey:error:)
-    func startChat(departmentKey: String) throws {
+    func startChat(departmentKey: String?) throws {
         try messageStream.startChat(departmentKey: departmentKey)
+    }
+    
+    @objc(startChatWithFirstQuestion:error:)
+    func startChat(firstQuestion: String?) throws {
+        try messageStream.startChat(firstQuestion: firstQuestion)
+    }
+    
+    @objc(startChatWithDepartmentKey:firstQuestion:error:)
+    func startChat(departmentKey: String?,
+                   firstQuestion: String?) throws {
+        try messageStream.startChat(departmentKey: departmentKey,
+                                    firstQuestion: firstQuestion)
     }
     
     @objc(closeChat:)
