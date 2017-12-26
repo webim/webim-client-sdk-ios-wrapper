@@ -1,8 +1,8 @@
 //
-//  WebimError.swift
-//  WebimClientLibraryWrapper
+//  WebimLogger.swift
+//  ObjectiveCExample
 //
-//  Created by Nikita Lazarev-Zubov on 26.10.17.
+//  Created by Nikita Lazarev-Zubov on 26.12.17.
 //  Copyright © 2017 Webim. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,57 +24,32 @@
 //  SOFTWARE.
 //
 
-
 import Foundation
 import WebimClientLibrary
 
-
-// MARK: - WebimError
-@objc(WebimError)
-final class _ObjCWebimError: NSObject {
+// MARK: - WebimLogger
+@objc(WebimLogger)
+protocol _ObjCWebimLogger {
     
-    // MARK: - Properties
-    private (set) var webimError: WebimError
-    
-    
-    // MARK: - Initialization
-    init(webimError: WebimError) {
-        self.webimError = webimError
-    }
-    
-    
-    // MARK: - Methods
-    
-    @objc(getErrorType)
-    func getErrorType() -> _ObjCFatalErrorType {
-        switch webimError.getErrorType() {
-        case .ACCOUNT_BLOCKED:
-            return .ACCOUNT_BLOCKED
-        case .PROVIDED_VISITOR_FIELDS_EXPIRED:
-            return .PROVIDED_VISITOR_FIELDS_EXPIRED
-        case .UNKNOWN:
-            return .UNKNOWN
-        case .VISITOR_BANNED:
-            return .VISITOR_BANNED
-        case .WRONG_PROVIDED_VISITOR_HASH:
-            return .WRONG_PROVIDED_VISITOR_HASH
-        }
-    }
-    
-    @objc(getErrorString)
-    func getErrorString() -> String {
-        return webimError.getErrorString()
-    }
+    @objc(logEntry:)
+    func log(entry: String)
     
 }
 
-
-// MARK: - FatalErrorType
-@objc(FatalErrorType)
-enum _ObjCFatalErrorType: Int {
-    case ACCOUNT_BLOCKED
-    case PROVIDED_VISITOR_FIELDS_EXPIRED
-    case UNKNOWN
-    case VISITOR_BANNED
-    case WRONG_PROVIDED_VISITOR_HASH
+// MARK: - Protocols' wrappers
+// MARK: - WebimLogger
+final class WebimLoggerWrapper: WebimLogger {
+    
+    // MARK: - Properties
+    private (set) var webimLogger: _ObjCWebimLogger
+    
+    // MARK: - Initialization
+    init(webimLogger: _ObjCWebimLogger) {
+        self.webimLogger = webimLogger
+    }
+    
+    func log(entry: String) {
+        webimLogger.log(entry: entry)
+    }
+    
 }

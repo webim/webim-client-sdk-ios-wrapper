@@ -28,6 +28,7 @@
 		CE87B5B61FA1EA920070FF5F /* WebimSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE87B5B51FA1EA920070FF5F /* WebimSession.swift */; };
 		CE8C67DA1FA3505500BD3044 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = CE8C67D91FA3505500BD3044 /* README.md */; };
 		CE8C67DC1FA3505A00BD3044 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = CE8C67DB1FA3505A00BD3044 /* LICENSE */; };
+		CEDAD9751FF2978200F5E7CF /* WebimLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEDAD9741FF2978200F5E7CF /* WebimLogger.swift */; };
 		E2DE9F60E55F49815E49E59E /* Pods_ObjectiveCExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8957D0C29EA2022FBCC7C1FD /* Pods_ObjectiveCExample.framework */; };
 /* End PBXBuildFile section */
 
@@ -61,6 +62,7 @@
 		CE87B5B51FA1EA920070FF5F /* WebimSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebimSession.swift; sourceTree = "<group>"; };
 		CE8C67D91FA3505500BD3044 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CE8C67DB1FA3505A00BD3044 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		CEDAD9741FF2978200F5E7CF /* WebimLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebimLogger.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,6 +145,7 @@
 				CE7B80F21FD9A89F00772BAA /* ProvidedAuthorizationTokenStateListener.swift */,
 				CE87B5B31FA1DBCA0070FF5F /* Webim.swift */,
 				CE67FB1C1FA22454007117B4 /* WebimError.swift */,
+				CEDAD9741FF2978200F5E7CF /* WebimLogger.swift */,
 				CE03FC1E1FA21820008AFAC1 /* WebimRemoteNotification.swift */,
 				CE87B5B51FA1EA920070FF5F /* WebimSession.swift */,
 				CE87B5B21FA1DBCA0070FF5F /* ObjectiveCExample-Bridging-Header.h */,
@@ -286,6 +289,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEDAD9751FF2978200F5E7CF /* WebimLogger.swift in Sources */,
 				CE7B80F31FD9A89F00772BAA /* ProvidedAuthorizationTokenStateListener.swift in Sources */,
 				CE67FB231FA241BA007117B4 /* MessageTracker.swift in Sources */,
 				CE2E52A01FE1557C0036CBBC /* Department.swift in Sources */,

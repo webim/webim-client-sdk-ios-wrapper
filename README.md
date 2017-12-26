@@ -17,6 +17,7 @@ Then just copy .swift-files from **WebimClientLibraryWrapper** directory to your
 * **ProvidedAuthorizationTokenStateListener.swift**
 * **Webim.swift**,
 * **WebimError.swift**,
+* **WebimLogger.swift**,
 * **WebimRemoteNotification.swift**,
 * **WebimSession.swift**.
 

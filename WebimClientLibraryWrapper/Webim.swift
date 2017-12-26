@@ -173,6 +173,13 @@ final class _ObjCSessionBuilder: NSObject {
         return self
     }
     
+    @objc(setWebimLogger:)
+    func set(webimLogger: _ObjCWebimLogger) -> _ObjCSessionBuilder {
+        sessionBuilder = sessionBuilder.set(webimLogger: WebimLoggerWrapper(webimLogger: webimLogger))
+        
+        return self
+    }
+    
     @objc(build:)
     func build() throws -> _ObjCWebimSession {
         return try _ObjCWebimSession(webimSession: sessionBuilder.build())

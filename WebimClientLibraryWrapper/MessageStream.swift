@@ -127,11 +127,13 @@ final class _ObjCMessageStream: NSObject {
         return messageStream.getLastRatingOfOperatorWith(id: id)
     }
     
-    @objc(rateOperatorWithID:byRating:error:)
+    @objc(rateOperatorWithID:byRating:completionHandler:error:)
     func rateOperatorWith(id: String,
-                          byRating rating: Int) throws {
+                          byRating rating: Int,
+                          completionHandler: _ObjCRateOperatorCompletionHandler) throws {
         try messageStream.rateOperatorWith(id: id,
-                                           byRating: rating)
+                                           byRating: rating,
+                                           comletionHandler: RateOperatorCompletionHandlerWrapper(rateOperatorCompletionHandler: completionHandler))
     }
     
     @objc(startChat:)
@@ -166,16 +168,23 @@ final class _ObjCMessageStream: NSObject {
         try messageStream.setVisitorTyping(draftMessage: draftMessage)
     }
     
+    @objc(sendMessage:error:)
+    func send(message: String) throws -> String {
+        return try messageStream.send(message: message)
+    }
+    
+    @objc(sendMessage:data:error:)
+    func send(message: String,
+              data: [String: Any]?) throws -> String {
+        return try messageStream.send(message: message,
+                                      data: data)
+    }
+    
     @objc(sendMessage:isHintQuestion:error:)
     func send(message: String,
               isHintQuestion: Bool) throws -> String {
         return try messageStream.send(message: message,
                                       isHintQuestion: isHintQuestion)
-    }
-    
-    @objc(sendMessage:error:)
-    func send(message: String) throws -> String {
-        return try messageStream.send(message: message)
     }
     
     @objc(sendFile:filename:mimeType:completionHandler:error:)
@@ -265,6 +274,18 @@ protocol _ObjCSendFileCompletionHandler {
     
 }
 
+// MARK: - RateOperatorCompletionHandler
+@objc(RateOperatorCompletionHandler)
+protocol _ObjCRateOperatorCompletionHandler {
+    
+    @objc(onSuccess)
+    func onSuccess()
+    
+    @objc(onFailure:)
+    func onFailure(error: _ObjCRateOperatorError)
+    
+}
+
 // MARK: - VisitSessionStateListener
 @objc(VisitSessionStateListener)
 protocol _ObjCVisitSessionStateListener {
@@ -346,13 +367,6 @@ enum _ObjCChatState: Int {
     case UNKNOWN
 }
 
-// MARK: - SendFileError
-@objc(SendFileError)
-enum _ObjCSendFileError: Int, Error {
-    case FILE_SIZE_EXCEEDED
-    case FILE_TYPE_NOT_ALLOWED
-}
-
 // MARK: - OnlineStatus
 @objc(OnlineStatus)
 enum _ObjCOnlineStatus: Int {
@@ -372,6 +386,20 @@ enum _ObjCVisitSessionState: Int {
     case IDLE_AFTER_CHAT
     case OFFLINE_MESSAGE
     case UNKNOWN
+}
+
+// MARK: - SendFileError
+@objc(SendFileError)
+enum _ObjCSendFileError: Int, Error {
+    case FILE_SIZE_EXCEEDED
+    case FILE_TYPE_NOT_ALLOWED
+}
+
+// MARK: - RateOperatorError
+@objc(RateOperatorError)
+enum _ObjCRateOperatorError: Int, Error {
+    case NO_CHAT
+    case WRONG_OPERATOR_ID
 }
 
 
@@ -409,6 +437,40 @@ fileprivate final class SendFileCompletionHandlerWrapper: SendFileCompletionHand
         
         sendFileCompletionHandler.onFailure(messageID: messageID,
                                             error: objCError!)
+    }
+    
+}
+
+// MARK: - RateOperatorCompletionHandler
+fileprivate final class RateOperatorCompletionHandlerWrapper: RateOperatorCompletionHandler {
+    
+    // MARK: - Properties
+    private (set) var rateOperatorCompletionHandler: _ObjCRateOperatorCompletionHandler
+    
+    
+    // MARK: - Initialization
+    init(rateOperatorCompletionHandler: _ObjCRateOperatorCompletionHandler) {
+        self.rateOperatorCompletionHandler = rateOperatorCompletionHandler
+    }
+    
+    
+    // MARK: - Methods
+    // MARK: RateOperatorCompletionHandler protocol methods
+    
+    func onSuccess() {
+        rateOperatorCompletionHandler.onSuccess()
+    }
+    
+    func onFailure(error: RateOperatorError) {
+        var objCError: _ObjCRateOperatorError?
+        switch error {
+        case .NO_CHAT:
+            objCError = .NO_CHAT
+        case .WRONG_OPERATOR_ID:
+            objCError = .WRONG_OPERATOR_ID
+        }
+        
+        rateOperatorCompletionHandler.onFailure(error: objCError!)
     }
     
 }

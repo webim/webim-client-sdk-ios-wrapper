@@ -51,7 +51,7 @@ protocol _ObjCMessageListener {
 
 
 // MARK: - Protocols' wrappers
-// MARK: - MessageListenerWrapper
+// MARK: - MessageListener
 final class MessageListenerWrapper: MessageListener {
     
     // MARK: - Properties
