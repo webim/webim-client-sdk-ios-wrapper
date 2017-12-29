@@ -601,7 +601,7 @@ fileprivate final class CurrentOperatorChangeListenerWrapper: CurrentOperatorCha
     func changed(operator previousOperator: Operator,
                  to newOperator: Operator?) {
         currentOperatorChangeListener.changed(operator: _ObjCOperator(operator: previousOperator),
-                                              to: (newOperator == nil) ? nil : _ObjCOperator(operator: newOperator!))
+                                              to: ((newOperator == nil) ? nil : _ObjCOperator(operator: newOperator!)))
     }
     
 }

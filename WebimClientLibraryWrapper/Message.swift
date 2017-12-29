@@ -86,7 +86,7 @@ final class _ObjCMessage: NSObject {
     
     @objc(getSenderName)
     func getSenderName() -> String {
-        return getSenderName()
+        return message.getSenderName()
     }
     
     @objc(getSendStatus)
