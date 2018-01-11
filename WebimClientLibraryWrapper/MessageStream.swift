@@ -34,7 +34,7 @@ import WebimClientLibrary
 final class _ObjCMessageStream: NSObject {
     
     // MARK: - Properties
-    private (set) var messageStream: MessageStream
+    private let messageStream: MessageStream
     
     
     // MARK: - Initialization
@@ -173,11 +173,13 @@ final class _ObjCMessageStream: NSObject {
         return try messageStream.send(message: message)
     }
     
-    @objc(sendMessage:data:error:)
+    @objc(sendMessage:data:completionHandler:error:)
     func send(message: String,
-              data: [String: Any]?) throws -> String {
+              data: [String: Any]?,
+              completionHandler: _ObjCDataMessageCompletionHandler?) throws -> String {
         return try messageStream.send(message: message,
-                                      data: data)
+                                      data: data,
+                                      completionHandler: ((completionHandler == nil) ? nil : DataMessageCompletionHandlerWrapper(dataMessageCompletionHandler: completionHandler!)))
     }
     
     @objc(sendMessage:isHintQuestion:error:)
@@ -245,7 +247,7 @@ final class _ObjCMessageStream: NSObject {
 final class _ObjCLocationSettings: NSObject {
     
     // MARK: - Properties
-    private (set) var locationSettings: LocationSettings
+    private let locationSettings: LocationSettings
     
     // MARK: - Initialization
     init(locationSettings: LocationSettings) {
@@ -261,6 +263,19 @@ final class _ObjCLocationSettings: NSObject {
 }
 
 
+// MARK: - DataMessageCompletionHandler
+@objc(DataMessageCompletionHandler)
+protocol _ObjCDataMessageCompletionHandler {
+    
+    @objc(onSuccessWithMessageID:)
+    func onSuccess(messageID: String)
+    
+    @objc(onFailureWithMessageID:error:)
+    func onFailure(messageID: String,
+                   error: _ObjCDataMessageError)
+    
+}
+
 // MARK: - SendFileCompletionHandler
 @objc(SendFileCompletionHandler)
 protocol _ObjCSendFileCompletionHandler {
@@ -268,7 +283,7 @@ protocol _ObjCSendFileCompletionHandler {
     @objc(onSuccessWithMessageID:)
     func onSuccess(messageID: String)
     
-    @objc(OnFailureWithMessageID:error:)
+    @objc(onFailureWithMessageID:error:)
     func onFailure(messageID: String,
                    error: _ObjCSendFileError)
     
@@ -388,6 +403,17 @@ enum _ObjCVisitSessionState: Int {
     case UNKNOWN
 }
 
+// MARK: - DataMessageError
+@objc(DataMessageError)
+enum _ObjCDataMessageError: Int, Error {
+    case QUOTED_MESSAGE_CANNOT_BE_REPLIED
+    case QUOTED_MESSAGE_FROM_ANOTHER_VISITOR
+    case QUOTED_MESSAGE_MULTIPLE_IDS
+    case QUOTED_MESSAGE_REQUIRED_ARGUMENTS_MISSING
+    case QUOTED_MESSAGE_WRONG_ID
+    case UNKNOWN
+}
+
 // MARK: - SendFileError
 @objc(SendFileError)
 enum _ObjCSendFileError: Int, Error {
@@ -405,11 +431,54 @@ enum _ObjCRateOperatorError: Int, Error {
 
 // MARK: - Protocols' wrappers
 
+// MARK: - DataMessageCompletionHandler
+fileprivate final class DataMessageCompletionHandlerWrapper: DataMessageCompletionHandler {
+    
+    // MARK: - Properties
+    private let dataMessageCompletionHandler: _ObjCDataMessageCompletionHandler
+    
+    
+    // MARK: - Initialization
+    init(dataMessageCompletionHandler: _ObjCDataMessageCompletionHandler) {
+        self.dataMessageCompletionHandler = dataMessageCompletionHandler
+    }
+    
+    
+    // MARK: - Methods
+    // MARK: DataMessageCompletionHandler protocol methods
+    
+    func onSussess(messageID: String) {
+        dataMessageCompletionHandler.onSuccess(messageID: messageID)
+    }
+    
+    func onFailure(messageID: String, error: DataMessageError) {
+        var objCError: _ObjCDataMessageError?
+        switch error {
+        case .QUOTED_MESSAGE_CANNOT_BE_REPLIED:
+            objCError = .QUOTED_MESSAGE_CANNOT_BE_REPLIED
+        case .QUOTED_MESSAGE_FROM_ANOTHER_VISITOR:
+            objCError = .QUOTED_MESSAGE_FROM_ANOTHER_VISITOR
+        case .QUOTED_MESSAGE_MULTIPLE_IDS:
+            objCError = .QUOTED_MESSAGE_MULTIPLE_IDS
+        case .QUOTED_MESSAGE_REQUIRED_ARGUMENTS_MISSING:
+            objCError = .QUOTED_MESSAGE_REQUIRED_ARGUMENTS_MISSING
+        case .QUOTED_MESSAGE_WRONG_ID:
+            objCError = .QUOTED_MESSAGE_WRONG_ID
+        case .UNKNOWN:
+            objCError = .UNKNOWN
+        }
+        
+        dataMessageCompletionHandler.onFailure(messageID: messageID,
+                                               error: objCError!)
+    }
+    
+}
+
 // MARK: - SendFileCompletionHandler
 fileprivate final class SendFileCompletionHandlerWrapper: SendFileCompletionHandler {
     
     // MARK: - Properties
-    private (set) var sendFileCompletionHandler: _ObjCSendFileCompletionHandler
+    private let sendFileCompletionHandler: _ObjCSendFileCompletionHandler
     
     
     // MARK: - Initialization
@@ -445,7 +514,7 @@ fileprivate final class SendFileCompletionHandlerWrapper: SendFileCompletionHand
 fileprivate final class RateOperatorCompletionHandlerWrapper: RateOperatorCompletionHandler {
     
     // MARK: - Properties
-    private (set) var rateOperatorCompletionHandler: _ObjCRateOperatorCompletionHandler
+    private let rateOperatorCompletionHandler: _ObjCRateOperatorCompletionHandler
     
     
     // MARK: - Initialization
@@ -479,7 +548,7 @@ fileprivate final class RateOperatorCompletionHandlerWrapper: RateOperatorComple
 fileprivate final class VisitSessionStateListenerWrapper: VisitSessionStateListener {
     
     // MARK: - Properties
-    private (set) var visitSessionStateListener: _ObjCVisitSessionStateListener
+    private let visitSessionStateListener: _ObjCVisitSessionStateListener
     
     // MARK: - Initialization
     init(visitSessionStateListener: _ObjCVisitSessionStateListener) {
@@ -532,7 +601,7 @@ fileprivate final class VisitSessionStateListenerWrapper: VisitSessionStateListe
 fileprivate final class ChatStateListenerWrapper: ChatStateListener {
     
     // MARK: - Properties
-    private (set) var chatStateListener: _ObjCChatStateListener
+    private let chatStateListener: _ObjCChatStateListener
     
     // MARK: - Initialization
     init(chatStateListener: _ObjCChatStateListener) {
@@ -589,7 +658,7 @@ fileprivate final class ChatStateListenerWrapper: ChatStateListener {
 fileprivate final class CurrentOperatorChangeListenerWrapper: CurrentOperatorChangeListener {
     
     // MARK: - Properties
-    private (set) var currentOperatorChangeListener: _ObjCCurrentOperatorChangeListener
+    private let currentOperatorChangeListener: _ObjCCurrentOperatorChangeListener
     
     // MARK: - Initialization
     init(currentOperatorChangeListener: _ObjCCurrentOperatorChangeListener) {
@@ -610,7 +679,7 @@ fileprivate final class CurrentOperatorChangeListenerWrapper: CurrentOperatorCha
 fileprivate final class DepartmentListChangeListenerWrapper: DepartmentListChangeListener {
     
     // MARK: - Properties
-    private (set) var departmentListChangeListener: _ObjCDepartmentListChangeListener
+    private let departmentListChangeListener: _ObjCDepartmentListChangeListener
     
     // MARK: - Initialization
     init(departmentListChangeListener: _ObjCDepartmentListChangeListener) {
@@ -635,7 +704,7 @@ fileprivate final class DepartmentListChangeListenerWrapper: DepartmentListChang
 fileprivate final class LocationSettingsChangeListenerWrapper: LocationSettingsChangeListener {
     
     // MARK: - Properties
-    private (set) var locationSettingsChangeListener: _ObjCLocationSettingsChangeListener
+    private let locationSettingsChangeListener: _ObjCLocationSettingsChangeListener
     
     // MARK: - Initialization
     init(locationSettingsChangeListener: _ObjCLocationSettingsChangeListener) {
@@ -656,7 +725,7 @@ fileprivate final class LocationSettingsChangeListenerWrapper: LocationSettingsC
 fileprivate final class OperatorTypingListenerWrapper: OperatorTypingListener {
     
     // MARK: - Properties
-    private (set) var operatorTypingListener: _ObjCOperatorTypingListener
+    private let operatorTypingListener: _ObjCOperatorTypingListener
     
     // MARK: - Initialization
     init(operatorTypingListener: _ObjCOperatorTypingListener) {
@@ -675,7 +744,7 @@ fileprivate final class OperatorTypingListenerWrapper: OperatorTypingListener {
 fileprivate final class OnlineStatusChangeListenerWrapper: OnlineStatusChangeListener {
     
     // MARK: - Properties
-    private (set) var onlineStatusChangeListener: _ObjCOnlineStatusChangeListener
+    private let onlineStatusChangeListener: _ObjCOnlineStatusChangeListener
     
     // MARK: - Initialization
     init(onlineStatusChangeListener: _ObjCOnlineStatusChangeListener) {

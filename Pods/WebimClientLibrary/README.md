@@ -4,29 +4,46 @@ This library provides [_Webim SDK_ for _iOS_](https://webim.ru/integration/mobil
 
 ## Installation
 
-_WebimClientLibrary_ is available through [_CocoaPods_](http://cocoapods.org). To install it, simply add the following line to your **Podfile**:
-```
-pod 'WebimClientLibrary', :git => 'https://github.com/webim/webim-client-sdk-ios.git', :tag => '3.8.0'
-```
 > Minimum iOS version supported – 8.0.
 
-### Objective-C
+### CocoaPods
 
-Trying to integrate _WebimClientLibrary_ into your Objective-C code? Try out our [_WebimClientLibraryWrapper_](https://github.com/webim/webim-client-sdk-ios-wrapper).
+Add following line for your target in your **Podfile**:
+```
+pod 'WebimClientLibrary', :git => 'https://github.com/webim/webim-client-sdk-ios.git', :tag => '3.10.0'
+```
+`use_frameworks!` must be specified.
 
-> Previous _Objective-C_ version (version numbers 2.x.x) can be reached from **version2** branch.
+### Carthage
 
-> If you're already using previous version and don't plan to jump on the new one you don't have to update your **Podfile**, depencies on version numbers 2.7.0 and lower will work properly. But for all renewals of the previous version usage, you have to switch your depency on the **version2** branch.
+Add following line to your **Cartfile**:
+```
+github "webim/webim-client-sdk-ios" ~> 3.10.0
+```
 
-### Release notes
+### Additional notes
 
-* `SendFileError` handling fixed.
-* `RateOperatorCompletionHandler` protocol that handled `RateOperatorError` errors added and `rateOperatorWith(id:,byRating rating:,comletionHandler:)` method signature changed.
-* `send(message:data:)` method added to `MessageStream`. `data` parameter is a custom fields dictionary to pass custom message parameters (if server version supports this functionality).
-* Documentation typos fixed.
+#### Objective-C
 
-#### Demo app
-* `RateOperatorCompletionHandler` protocol implementation example added.
+Trying to integrate _WebimClientLibrary_ into your _Objective-C_ code? Try out our [_WebimClientLibraryWrapper_](https://github.com/webim/webim-client-sdk-ios-wrapper).
+
+#### Previous version
+
+Previous _Objective-C_ version (version numbers 2.x.x) can be reached from **version2** branch.
+
+If you're already using previous version and don't plan to jump on the new one you don't have to update your **Podfile**, depencies on version numbers 2.7.0 and lower will work properly. But for all renewals of the previous version usage, you have to switch your depency on the **version2** branch.
+
+## Release notes
+
+* Optional completion handler of type `DataMessageCompletionHandler` added to `send(message:,data:,completionHandler:)` method of `MessageStream` protocol. `DataMessageError` types support added.
+* Dramatically improved CPU usage.
+* Wrong `FatalErrorType` on `.VISITOR_BANNED` case fixed.
+* Internal server errors are prevented to go in cycles when occurs more than five times in a row.
+* Minor bug fixes, stability and performance improvements.
+* Documentation additions and improvements.
+
+### Demo app
+* Interface improvements.
 
 ## Example
 
@@ -99,6 +116,25 @@ Specific remote notification object can be getted through `Webim` class `parse(r
 **FatalErrorHandler.swift** contains `FatalErrorHandler` protocol description. Its methods can be implemented by an app for tracking errors which can arise in progress. All kinds of specific errors are described inside the same file.
 
 **MessageStream.swift** also contains additional protocols descriptions which can be implemented by an app classes for tracking different particular changes. E.g. `ChatStateListener` protocol methods are called when chat state is changed (all the specific chat states are described in the same file).
+
+### Remote notifications
+
+For iOS to be able to handle remote notifications automatically your app must be aware of possible remote notification types and arguments.
+
+Possible `loc-key` values:
+* `P.OA` means that operator accepted chat.
+* `P.OF` means that operator sent a flie.
+* `P.OM` means that operator sent a text message.
+
+`loc-args` values for this types:
+* `P.OA`: operator's name.
+* `P.OF`: operator's name, file name.
+* `P.OM`: operator's name, message text.
+
+Remote notification handling with Strings.localizable file example:
+```
+"P.OM" = "Message from %@ is received: %@."
+```
 
 ### Conclusion
 

@@ -34,7 +34,7 @@ import WebimClientLibrary
 final class _ObjCWebimRemoteNotification: NSObject {
     
     // MARK: - Properties
-    private (set) var webimRemoteNotification: WebimRemoteNotification
+    private let webimRemoteNotification: WebimRemoteNotification
     
     
     // MARK: - Initialization

@@ -40,7 +40,7 @@ protocol _ObjCProvidedAuthorizationTokenStateListener {
 final class ProvidedAuthorizationTokenStateListenerWrapper: ProvidedAuthorizationTokenStateListener {
     
     // MARK: - Properties
-    private (set) var providedAuthorizationTokenStateListener: _ObjCProvidedAuthorizationTokenStateListener
+    private let providedAuthorizationTokenStateListener: _ObjCProvidedAuthorizationTokenStateListener
     
     // MARK: - Initialization
     init(providedAuthorizationTokenStateListener: _ObjCProvidedAuthorizationTokenStateListener) {

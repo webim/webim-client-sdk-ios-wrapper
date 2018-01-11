@@ -41,7 +41,7 @@ protocol _ObjCWebimLogger {
 final class WebimLoggerWrapper: WebimLogger {
     
     // MARK: - Properties
-    private (set) var webimLogger: _ObjCWebimLogger
+    private let webimLogger: _ObjCWebimLogger
     
     // MARK: - Initialization
     init(webimLogger: _ObjCWebimLogger) {

@@ -54,9 +54,9 @@ final class _ObjCMessage: NSObject {
     }
     
     @objc(getData)
-    func getData() -> [String : Any]? {
+    func getData() -> [String: Any]? {
         if let data = message.getData() {
-            var objCData = [String : Any]()
+            var objCData = [String: Any]()
             for key in data.keys {
                 if let value = data[key] {
                     objCData[key] = value
@@ -143,7 +143,7 @@ final class _ObjCMessage: NSObject {
 final class _ObjCMessageAttachment: NSObject {
     
     // MARK: - Properties
-    private (set) var messageAttachment: MessageAttachment
+    private let messageAttachment: MessageAttachment
     
     
     // MARK: - Initialization
@@ -190,7 +190,7 @@ final class _ObjCMessageAttachment: NSObject {
 final class _ObjCImageInfo: NSObject {
     
     // MARK: - Properties
-    private (set) var imageInfo: ImageInfo
+    private let imageInfo: ImageInfo
     
     
     // MARK: - Initialization

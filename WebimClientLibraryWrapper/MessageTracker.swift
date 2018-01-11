@@ -34,7 +34,7 @@ import WebimClientLibrary
 final class _ObjCMessageTracker: NSObject {
     
     // MARK: - Properties
-    private (set) var messageTracker: MessageTracker
+    private let messageTracker: MessageTracker
     
     
     // MARK: - Initialization

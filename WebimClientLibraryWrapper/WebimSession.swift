@@ -34,7 +34,7 @@ import WebimClientLibrary
 final class _ObjCWebimSession: NSObject {
     
     // MARK: - Properties
-    private (set) var webimSession: WebimSession
+    private let webimSession: WebimSession
     
     
     // MARK: - Initializers

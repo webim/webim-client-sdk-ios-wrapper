@@ -50,7 +50,7 @@ final class _ObjCWebim: NSObject {
     }
     
     @objc(isWebimRemoteNotification:)
-    static func isWebim(remoteNotification: [AnyHashable : Any]) -> NSNumber {
+    static func isWebim(remoteNotification: [AnyHashable: Any]) -> NSNumber {
         return Webim.isWebim(remoteNotification: remoteNotification) as NSNumber
     }
     

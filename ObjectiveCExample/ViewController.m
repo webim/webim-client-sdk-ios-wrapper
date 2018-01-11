@@ -70,13 +70,24 @@ static NSString *LOCATION = @"mobile";
                                     // Handle response.
                                 }
                                      error:&error];
+    if (error != nil) {
+        // Handle error.
+    }
+    
+    /*
+    NSString *messageID = [messageStream sendMessage:@"test"
+                                               error:&error];
+    if (error != nil) {
+        // Handle error.
+    }
+     */
 }
 
 // MARK: MessageListener protocol methods
 
 - (void)addedMessage:(Message * _Nonnull)newMessage
                after:(Message * _Nullable)previousMessage {
-    // Handle adding.
+    printf("MESSAGE ADDED!\n");
 }
 
 - (void)changedMessage:(Message * _Nonnull)oldVersion

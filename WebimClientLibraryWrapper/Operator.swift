@@ -34,7 +34,7 @@ import WebimClientLibrary
 final class _ObjCOperator: NSObject {
     
     // MARK: - Private
-    private (set) var `operator`: Operator
+    private let `operator`: Operator
     
     
     // MARK: - Initialization

@@ -32,7 +32,7 @@ import WebimClientLibrary
 final class _ObjCDepartment: NSObject {
     
     // MARK: - Properties
-    private (set) var department: Department
+    private let department: Department
     
     
     // MARK: - Initialization
@@ -76,7 +76,7 @@ final class _ObjCDepartment: NSObject {
     }
     
     @objc(getLocalizedNames)
-    func getLocalizedNames() -> [String : String]? {
+    func getLocalizedNames() -> [String: String]? {
         return department.getLocalizedNames()
     }
     

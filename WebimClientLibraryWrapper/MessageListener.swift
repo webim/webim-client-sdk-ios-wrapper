@@ -55,7 +55,7 @@ protocol _ObjCMessageListener {
 final class MessageListenerWrapper: MessageListener {
     
     // MARK: - Properties
-    private (set) var messageListener: _ObjCMessageListener
+    private let messageListener: _ObjCMessageListener
     
     
     // MARK: - Initialization

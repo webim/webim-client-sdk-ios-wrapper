@@ -34,7 +34,7 @@ import WebimClientLibrary
 final class _ObjCWebimError: NSObject {
     
     // MARK: - Properties
-    private (set) var webimError: WebimError
+    private let webimError: WebimError
     
     
     // MARK: - Initialization
