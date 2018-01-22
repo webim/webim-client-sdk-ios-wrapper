@@ -1,30 +1,27 @@
 PODS:
-  - CryptoSwift (0.8.1)
   - SQLite.swift (0.11.4):
     - SQLite.swift/standard (= 0.11.4)
   - SQLite.swift/standard (0.11.4)
-  - WebimClientLibrary (3.10.0):
-    - CryptoSwift
+  - WebimClientLibrary (3.11.0):
     - SQLite.swift
 
 DEPENDENCIES:
-  - WebimClientLibrary (from `https://github.com/webim/webim-client-sdk-ios.git`, tag `3.10.0`)
+  - WebimClientLibrary (from `https://github.com/webim/webim-client-sdk-ios.git`, tag `3.11.0`)
 
 EXTERNAL SOURCES:
   WebimClientLibrary:
     :git: https://github.com/webim/webim-client-sdk-ios.git
-    :tag: 3.10.0
+    :tag: 3.11.0
 
 CHECKOUT OPTIONS:
   WebimClientLibrary:
     :git: https://github.com/webim/webim-client-sdk-ios.git
-    :tag: 3.10.0
+    :tag: 3.11.0
 
 SPEC CHECKSUMS:
-  CryptoSwift: 4b07d5b508c1eb67bfa314a727b705f8048a85de
   SQLite.swift: 3e3bee21da701b5b9f87c4a672cb54f233505692
-  WebimClientLibrary: b45a60e2ba8eb7996d2b17c5277550535a6b634f
+  WebimClientLibrary: 6bbd42628da6d149e6bf5be40d2b0ecba1fa814d
 
-PODFILE CHECKSUM: 18a69ee8498b9e7f6e13f0d0b6f82c0cf61ec5aa
+PODFILE CHECKSUM: 7110829f425911d440dff46961415fa188f31a8f
 
 COCOAPODS: 1.4.0.rc.1

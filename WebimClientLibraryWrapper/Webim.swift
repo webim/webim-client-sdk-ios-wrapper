@@ -173,9 +173,24 @@ final class _ObjCSessionBuilder: NSObject {
         return self
     }
     
-    @objc(setWebimLogger:)
-    func set(webimLogger: _ObjCWebimLogger) -> _ObjCSessionBuilder {
-        sessionBuilder = sessionBuilder.set(webimLogger: WebimLoggerWrapper(webimLogger: webimLogger))
+    @objc(setWebimLogger:verbosityLevel:)
+    func set(webimLogger: _ObjCWebimLogger,
+             verbosityLevel: _ObjCWebimLoggerVerbosityLevel) -> _ObjCSessionBuilder {
+        var internalVerbosityLevel: SessionBuilder.WebimLoggerVerbosityLevel?
+        switch verbosityLevel {
+        case .VERBOSE:
+            internalVerbosityLevel = .VERBOSE
+        case .DEBUG:
+            internalVerbosityLevel = .DEBUG
+        case .INFO:
+            internalVerbosityLevel = .INFO
+        case .WARNING:
+            internalVerbosityLevel = .WARNING
+        case .ERROR:
+            internalVerbosityLevel = .ERROR
+        }
+        sessionBuilder = sessionBuilder.set(webimLogger: WebimLoggerWrapper(webimLogger: webimLogger),
+                                            verbosityLevel: internalVerbosityLevel!)
         
         return self
     }
@@ -183,6 +198,16 @@ final class _ObjCSessionBuilder: NSObject {
     @objc(build:)
     func build() throws -> _ObjCWebimSession {
         return try _ObjCWebimSession(webimSession: sessionBuilder.build())
+    }
+    
+    // MARK: -
+    @objc(WebimLoggerVerbosityLevel)
+    enum _ObjCWebimLoggerVerbosityLevel: Int {
+        case VERBOSE
+        case DEBUG
+        case INFO
+        case WARNING
+        case ERROR
     }
     
 }

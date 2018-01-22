@@ -201,8 +201,8 @@ final class _ObjCMessageStream: NSObject {
     }
     
     @objc(newMessageTrackerWithMessageListener:error:)
-    func new(messageTracker messageListener: _ObjCMessageListener) throws -> _ObjCMessageTracker {
-        return try _ObjCMessageTracker(messageTracker: messageStream.new(messageTracker: MessageListenerWrapper(messageListener: messageListener)))
+    func newMessageTracker(messageListener: _ObjCMessageListener) throws -> _ObjCMessageTracker {
+        return try _ObjCMessageTracker(messageTracker: messageStream.newMessageTracker(messageListener: MessageListenerWrapper(messageListener: messageListener)))
     }
     
     @objc(setVisitSessionStateListener:)

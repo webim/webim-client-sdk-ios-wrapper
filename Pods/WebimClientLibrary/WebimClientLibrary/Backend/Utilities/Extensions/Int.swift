@@ -1,9 +1,9 @@
 //
-//  Dictionary.swift
+//  Int.swift
 //  WebimClientLibrary
 //
-//  Created by Nikita Lazarev-Zubov on 11.10.17.
-//  Copyright © 2017 Webim. All rights reserved.
+//  Created by Nikita Lazarev-Zubov on 17.01.18.
+//  Copyright © 2018 Webim. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -26,29 +26,33 @@
 
 import Foundation
 
-extension Dictionary {
+extension Int {
     
     // MARK: - Methods
     /**
-     Build string representation of HTTP parameter dictionary of keys and objects.
-     This percent escapes in compliance with RFC 3986.
-     - SeeAlso:
-     http://www.ietf.org/rfc/rfc3986.txt
-     - returns:
-     String representation in the form of key1=value1&key2=value2 where the keys and values are percent escaped.
      - author:
      Nikita Lazarev-Lubov
      - copyright:
-     2017 Webim
+     2018 Webim
      */
-    func stringFromHTTPParameters() -> String {
-        let parameterArray = map { key, value -> String in
-            let percentEscapedKey = (key as! String).addingPercentEncodingForURLQueryValue()!
-            let percentEscapedValue = (value as! String).addingPercentEncodingForURLQueryValue()!
-            return "\(percentEscapedKey)=\(percentEscapedValue)"
+    @_transparent
+    func bytes(totalBytes: Int) -> Array<UInt8> {
+        let valuePointer = UnsafeMutablePointer<Int>.allocate(capacity: 1)
+        valuePointer.pointee = self
+        
+        let bytesPointer = UnsafeMutablePointer<UInt8>(OpaquePointer(valuePointer))
+        var bytes = Array<UInt8>(repeating: 0,
+                                 count: totalBytes)
+        let memoryLayoutSize = MemoryLayout<Int>.size
+        let constraint = ((memoryLayoutSize < totalBytes) ? memoryLayoutSize : totalBytes)
+        for j in 0 ..< constraint {
+            bytes[(totalBytes - 1 - j)] = (bytesPointer + j).pointee
         }
         
-        return parameterArray.joined(separator: "&")
+        valuePointer.deinitialize()
+        valuePointer.deallocate(capacity: 1)
+        
+        return bytes
     }
-    
+ 
 }

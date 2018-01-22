@@ -155,12 +155,12 @@ final class _ObjCMessageAttachment: NSObject {
     // MARK: - Methods
     
     @objc(getContentType)
-    func getContentType() -> String? {
+    func getContentType() -> String {
         return messageAttachment.getContentType()
     }
     
     @objc(getFileName)
-    func getFileName() -> String? {
+    func getFileName() -> String {
         return messageAttachment.getFileName()
     }
     
@@ -178,8 +178,8 @@ final class _ObjCMessageAttachment: NSObject {
         return messageAttachment.getSize() as NSNumber?
     }
     
-    @objc(getURLString)
-    func getURLString() -> URL? {
+    @objc(getURL)
+    func getURL() -> URL {
         return messageAttachment.getURL()
     }
     

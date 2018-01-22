@@ -1,9 +1,9 @@
 //
-//  Dictionary.swift
+//  UInt32.swift
 //  WebimClientLibrary
 //
-//  Created by Nikita Lazarev-Zubov on 11.10.17.
-//  Copyright © 2017 Webim. All rights reserved.
+//  Created by Nikita Lazarev-Zubov on 17.01.18.
+//  Copyright © 2018 Webim. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -26,29 +26,32 @@
 
 import Foundation
 
-extension Dictionary {
+extension UInt32 {
     
-    // MARK: - Methods
+    // MARK: - Initialization
     /**
-     Build string representation of HTTP parameter dictionary of keys and objects.
-     This percent escapes in compliance with RFC 3986.
-     - SeeAlso:
-     http://www.ietf.org/rfc/rfc3986.txt
-     - returns:
-     String representation in the form of key1=value1&key2=value2 where the keys and values are percent escaped.
      - author:
      Nikita Lazarev-Lubov
      - copyright:
-     2017 Webim
+     2018 Webim
      */
-    func stringFromHTTPParameters() -> String {
-        let parameterArray = map { key, value -> String in
-            let percentEscapedKey = (key as! String).addingPercentEncodingForURLQueryValue()!
-            let percentEscapedValue = (value as! String).addingPercentEncodingForURLQueryValue()!
-            return "\(percentEscapedKey)=\(percentEscapedValue)"
+    @_specialize(exported: true, where T == ArraySlice<UInt8>)
+    init<T: Collection>(bytes: T,
+                        fromIndex index: T.Index) where T.Element == UInt8, T.Index == Int {
+        if bytes.isEmpty {
+            self = 0
+            
+            return
         }
         
-        return parameterArray.joined(separator: "&")
+        let count = bytes.count
+        
+        let val0 = ((count > 0) ? (UInt32(bytes[index.advanced(by: 0)]) << 24) : 0)
+        let val1 = ((count > 1) ? (UInt32(bytes[index.advanced(by: 1)]) << 16) : 0)
+        let val2 = ((count > 2) ? (UInt32(bytes[index.advanced(by: 2)]) << 8) : 0)
+        let val3 = ((count > 3) ? UInt32(bytes[index.advanced(by: 3)]) : 0)
+        
+        self = val0 | val1 | val2 | val3
     }
     
 }

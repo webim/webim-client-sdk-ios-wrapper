@@ -1,8 +1,8 @@
 //
-//  Dictionary.swift
+//  WebimClientLibrary.h
 //  WebimClientLibrary
 //
-//  Created by Nikita Lazarev-Zubov on 11.10.17.
+//  Created by Sergey Maslov on 15.01.2018.
 //  Copyright © 2017 Webim. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,31 +24,14 @@
 //  SOFTWARE.
 //
 
-import Foundation
+#import <UIKit/UIKit.h>
 
-extension Dictionary {
-    
-    // MARK: - Methods
-    /**
-     Build string representation of HTTP parameter dictionary of keys and objects.
-     This percent escapes in compliance with RFC 3986.
-     - SeeAlso:
-     http://www.ietf.org/rfc/rfc3986.txt
-     - returns:
-     String representation in the form of key1=value1&key2=value2 where the keys and values are percent escaped.
-     - author:
-     Nikita Lazarev-Lubov
-     - copyright:
-     2017 Webim
-     */
-    func stringFromHTTPParameters() -> String {
-        let parameterArray = map { key, value -> String in
-            let percentEscapedKey = (key as! String).addingPercentEncodingForURLQueryValue()!
-            let percentEscapedValue = (value as! String).addingPercentEncodingForURLQueryValue()!
-            return "\(percentEscapedKey)=\(percentEscapedValue)"
-        }
-        
-        return parameterArray.joined(separator: "&")
-    }
-    
-}
+//! Project version number for WebimClientLibrary.
+FOUNDATION_EXPORT double WebimClientLibraryVersionNumber;
+
+//! Project version string for WebimClientLibrary.
+FOUNDATION_EXPORT const unsigned char WebimClientLibraryVersionString[];
+
+// In this header, you should import all the public headers of your framework using statements like #import <WebimClientLibrary/PublicHeader.h>
+
+
