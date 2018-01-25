@@ -47,6 +47,7 @@ final class MessageToSend: MessageImpl {
                    operatorID: nil,
                    senderAvatarURLString: nil,
                    senderName: senderName,
+                   sendStatus: .SENDING,
                    type: type,
                    data: nil,
                    text: text,

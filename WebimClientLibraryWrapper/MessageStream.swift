@@ -128,7 +128,7 @@ final class _ObjCMessageStream: NSObject {
     }
     
     @objc(rateOperatorWithID:byRating:completionHandler:error:)
-    func rateOperatorWith(id: String,
+    func rateOperatorWith(id: String?,
                           byRating rating: Int,
                           completionHandler: _ObjCRateOperatorCompletionHandler) throws {
         try messageStream.rateOperatorWith(id: id,

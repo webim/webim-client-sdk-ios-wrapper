@@ -24,10 +24,8 @@
 //  SOFTWARE.
 //
 
-
 import Foundation
 import WebimClientLibrary
-
 
 // MARK: - WebimRemoteNotification
 @objc(WebimRemoteNotification)
@@ -48,12 +46,16 @@ final class _ObjCWebimRemoteNotification: NSObject {
     @objc(getType)
     func getType() -> _ObjCNotificationType {
         switch webimRemoteNotification.getType() {
+        case .CONTACT_INFORMATION_REQUEST:
+            return .CONTACT_INFORMATION_REQUEST
         case .OPERATOR_ACCEPTED:
             return .OPERATOR_ACCEPTED
         case .OPERATOR_FILE:
             return .OPERATOR_FILE
         case .OPERATOR_MESSAGE:
             return .OPERATOR_MESSAGE
+        case .WIDGET:
+            return .WIDGET
         }
     }
     
@@ -82,9 +84,11 @@ final class _ObjCWebimRemoteNotification: NSObject {
 // MARK: - NotificationType
 @objc(NotificationType)
 enum _ObjCNotificationType: Int {
+    case CONTACT_INFORMATION_REQUEST
     case OPERATOR_ACCEPTED
     case OPERATOR_FILE
     case OPERATOR_MESSAGE
+    case WIDGET
 }
 
 // MARK: - NotificationEvent
