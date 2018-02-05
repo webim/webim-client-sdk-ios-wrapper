@@ -74,12 +74,11 @@ static NSString *LOCATION = @"mobile";
         // Handle error.
     }
     
-    /*NSString *messageID = [messageStream sendMessage:@"test"
+    NSString *messageID = [messageStream sendMessage:@"Wrapper test."
                                                error:&error];
     if (error != nil) {
         // Handle error.
-    }*/
-     
+    }
 }
 
 // MARK: MessageListener protocol methods

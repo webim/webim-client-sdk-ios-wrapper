@@ -70,8 +70,8 @@ extension HistoryID: Equatable {
     
     static func == (lhs: HistoryID,
                     rhs: HistoryID) -> Bool {
-        return (lhs.dbID == rhs.dbID)
-            && (lhs.timeInMicrosecond == rhs.timeInMicrosecond)
+        return ((lhs.dbID == rhs.dbID)
+            && (lhs.timeInMicrosecond == rhs.timeInMicrosecond))
     }
     
 }

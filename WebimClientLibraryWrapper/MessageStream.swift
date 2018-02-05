@@ -68,6 +68,8 @@ final class _ObjCMessageStream: NSObject {
         switch messageStream.getChatState() {
         case .CHATTING:
             return .CHATTING
+        case .CHATTING_WITH_ROBOT:
+            return .CHATTING_WITH_ROBOT
         case .CLOSED_BY_OPERATOR:
             return .CLOSED_BY_OPERATOR
         case .CLOSED_BY_VISITOR:
@@ -374,6 +376,7 @@ protocol _ObjCOnlineStatusChangeListener {
 @objc(ChatState)
 enum _ObjCChatState: Int {
     case CHATTING
+    case CHATTING_WITH_ROBOT
     case CLOSED_BY_OPERATOR
     case CLOSED_BY_VISITOR
     case INVITATION
@@ -616,6 +619,8 @@ fileprivate final class ChatStateListenerWrapper: ChatStateListener {
         switch previousState {
         case .CHATTING:
             previousObjCChatState = .CHATTING
+        case .CHATTING_WITH_ROBOT:
+            previousObjCChatState = .CHATTING_WITH_ROBOT
         case .CLOSED_BY_OPERATOR:
             previousObjCChatState = .CLOSED_BY_OPERATOR
         case .CLOSED_BY_VISITOR:
@@ -634,6 +639,8 @@ fileprivate final class ChatStateListenerWrapper: ChatStateListener {
         switch newState {
         case .CHATTING:
             newObjCChatState = .CHATTING
+        case .CHATTING_WITH_ROBOT:
+            newObjCChatState = .CHATTING_WITH_ROBOT
         case .CLOSED_BY_OPERATOR:
             newObjCChatState = .CLOSED_BY_OPERATOR
         case .CLOSED_BY_VISITOR:

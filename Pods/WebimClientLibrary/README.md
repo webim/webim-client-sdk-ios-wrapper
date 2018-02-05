@@ -10,7 +10,7 @@ This library provides [_Webim SDK_ for _iOS_](https://webim.ru/integration/mobil
 
 Add following line for your target in your **Podfile**:
 ```
-pod 'WebimClientLibrary', :git => 'https://github.com/webim/webim-client-sdk-ios.git', :tag => '3.12.0'
+pod 'WebimClientLibrary', :git => 'https://github.com/webim/webim-client-sdk-ios.git', :tag => '3.13.0'
 ```
 `use_frameworks!` must be specified.
 
@@ -18,7 +18,7 @@ pod 'WebimClientLibrary', :git => 'https://github.com/webim/webim-client-sdk-ios
 
 Add following line to your **Cartfile**:
 ```
-github "webim/webim-client-sdk-ios" ~> 3.12.0
+github "webim/webim-client-sdk-ios" ~> 3.13.0
 ```
 
 ### Additional notes
@@ -35,16 +35,15 @@ If you're already using previous version and don't plan to jump on the new one y
 
 ## Release notes
 
-* `rateOperatorWith(id:byRating:comletionHandler:)` method of `MessageStream` protocol now can take `nil` value of <operator> `id` parameter. If so, current operator will be rated.
-* Contact information request and widget remote notifications type basic support added.
-* Some history request bugs fixed:
-    - Case when initial history request fails and prevents further requests fixed.
-    - Case when further history request doesn't call passed completion.
-* Other minor improvements.
+* `getUnreadByVisitorTimestamp()` method of `MessageStream` protocol logic is changed: now it returns `nil` if there's no unread by visitor messages or timestamp after which messages are unread by visitor.
+* `getID()` and `getName()` methods of `Operator` protocol now return non-optionals.
+* `CHATTING_WITH_ROBOT` chat state support added.
+* Working with local storaged messages bugs fixed.
+* Additional interaction with server provided.
+* Minor _WebimClientLibrary_ framework optimization.
 
 ### Example app
-* Appearance improvements.
-* Other minor improvements.
+* Links display inside messages improved.
 
 ## Example
 
@@ -123,14 +122,18 @@ Specific remote notification object can be getted through `Webim` class `parse(r
 For iOS to be able to handle remote notifications automatically your app must be aware of possible remote notification types and arguments.
 
 Possible `loc-key` values:
+* `P.CR` means that operator sent contact information request.
 * `P.OA` means that operator accepted chat.
 * `P.OF` means that operator sent a flie.
 * `P.OM` means that operator sent a text message.
+* `P.WM` means that operator sent a widget message (for this functionality support one should contact _Webim_ support).
 
 `loc-args` values for this types:
+* `P.CR`: empty.
 * `P.OA`: operator's name.
 * `P.OF`: operator's name, file name.
 * `P.OM`: operator's name, message text.
+* `P.WM`: empty.
 
 Remote notification handling with Strings.localizable file example:
 ```

@@ -46,12 +46,12 @@ final class _ObjCOperator: NSObject {
     // MARK: - Methods
     
     @objc(getID)
-    func getID() -> String? {
+    func getID() -> String {
         return `operator`.getID()
     }
     
     @objc(getName)
-    func getName() -> String? {
+    func getName() -> String {
         return `operator`.getName()
     }
     
