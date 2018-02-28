@@ -242,6 +242,16 @@ final class _ObjCMessageStream: NSObject {
         messageStream.set(onlineStatusChangeListener: OnlineStatusChangeListenerWrapper(onlineStatusChangeListener: onlineStatusChangeListener))
     }
     
+    @objc(setUnreadByOperatorTimestampChangeListener:)
+    func set(unreadByOperatorTimestampChangeListener: _ObjCUnreadByOperatorTimestampChangeListener) {
+        messageStream.set(unreadByOperatorTimestampChangeListener: UnreadByOperatorTimestampChangeListenerWrapper(unreadByOperatorTimestampChangeListener: unreadByOperatorTimestampChangeListener))
+    }
+    
+    @objc(setUnreadByVisitorTimestampChangeListener:)
+    func set(unreadByVisitorTimestampChangeListener: _ObjCUnreadByVisitorTimestampChangeListener) {
+        messageStream.set(unreadByVisitorTimestampChangeListener: UnreadByVisitorTimestampChangeListenerWrapper(unreadByVisitorTimestampChangeListener: unreadByVisitorTimestampChangeListener))
+    }
+        
 }
 
 // MARK: - LocationSettings
@@ -371,6 +381,23 @@ protocol _ObjCOnlineStatusChangeListener {
     
 }
 
+// MARK: - UnreadByOperatorTimestampChangeListener
+@objc(UnreadByOperatorTimestampChangeListener)
+protocol _ObjCUnreadByOperatorTimestampChangeListener {
+    
+    @objc(changedUnreadByOperatorTimestampTo:)
+    func changedUnreadByOperatorTimestampTo(newValue: Date?)
+    
+}
+
+// MARK: - UnreadByVisitorTimestampChangeListener
+@objc(UnreadByVisitorTimestampChangeListener)
+protocol _ObjCUnreadByVisitorTimestampChangeListener {
+    
+    @objc(changedUnreadByVisitorTimestampTo:)
+    func changedUnreadByVisitorTimestampTo(newValue: Date?)
+    
+}
 
 // MARK: - ChatState
 @objc(ChatState)
@@ -794,5 +821,43 @@ fileprivate final class OnlineStatusChangeListenerWrapper: OnlineStatusChangeLis
                                            to: newObjCOnlineStatus!)
     }
     
+    
+}
+
+// MARK: - UnreadByOperatorTimestampChangeListener
+fileprivate final class UnreadByOperatorTimestampChangeListenerWrapper: UnreadByOperatorTimestampChangeListener {
+    
+    // MARK: - Properties
+    private let unreadByOperatorTimestampChangeListener: _ObjCUnreadByOperatorTimestampChangeListener
+    
+    // MARK: - Initialization
+    init(unreadByOperatorTimestampChangeListener: _ObjCUnreadByOperatorTimestampChangeListener) {
+        self.unreadByOperatorTimestampChangeListener = unreadByOperatorTimestampChangeListener
+    }
+    
+    // MARK: - Methods
+    // MARK: UnreadByOperatorTimestampChangeListener protocol methods
+    func changedUnreadByOperatorTimestampTo(newValue: Date?) {
+        unreadByOperatorTimestampChangeListener.changedUnreadByOperatorTimestampTo(newValue: newValue)
+    }
+    
+}
+
+// MARK: - UnreadByVisitorTimestampChangeListener
+fileprivate final class UnreadByVisitorTimestampChangeListenerWrapper: UnreadByVisitorTimestampChangeListener {
+    
+    // MARK: - Properties
+    private let unreadByVisitorTimestampChangeListener: _ObjCUnreadByVisitorTimestampChangeListener
+    
+    // MARK: - Initialization
+    init(unreadByVisitorTimestampChangeListener: _ObjCUnreadByVisitorTimestampChangeListener) {
+        self.unreadByVisitorTimestampChangeListener = unreadByVisitorTimestampChangeListener
+    }
+    
+    // MARK: - Methods
+    // MARK: - UnreadByVisitorTimestampChangeListener protocol methods
+    func changedUnreadByVisitorTimestampTo(newValue: Date?) {
+        unreadByVisitorTimestampChangeListener.changedUnreadByVisitorTimestampTo(newValue: newValue)
+    }
     
 }

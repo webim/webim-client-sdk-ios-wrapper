@@ -38,29 +38,27 @@ final class DeltaResponse {
     // MARK: - Constants
     // Raw values equal to field names received in responses from server.
     private enum JSONField: String {
-        case DELTA_LIST = "deltaList"
-        case FULL_UPDATE = "fullUpdate"
-        case REVISION = "revision"
+        case deltaList = "deltaList"
+        case fullUpdate = "fullUpdate"
+        case revision = "revision"
     }
-    
     
     // MARK: - Properties
     private lazy var deltaList = [DeltaItem]()
     private var fullUpdate: FullUpdate?
     private var revision: Int64?
     
-    
     // MARK: - Initialization
     init(jsonDictionary: [String: Any?]) {
-        if let revision = jsonDictionary[JSONField.REVISION.rawValue] as? Int64 {
+        if let revision = jsonDictionary[JSONField.revision.rawValue] as? Int64 {
             self.revision = revision
         }
         
-        if let fullUpdateValue = jsonDictionary[JSONField.FULL_UPDATE.rawValue] as? [String: Any?] {
+        if let fullUpdateValue = jsonDictionary[JSONField.fullUpdate.rawValue] as? [String: Any?] {
             fullUpdate = FullUpdate(jsonDictionary: fullUpdateValue)
         }
         
-        if let deltaItemArray = jsonDictionary[JSONField.DELTA_LIST.rawValue] as? [Any] {
+        if let deltaItemArray = jsonDictionary[JSONField.deltaList.rawValue] as? [Any] {
             for arrayItem in deltaItemArray {
                 if let arrayItem = arrayItem as? [String: Any?] {
                     if let deltaItem = DeltaItem(jsonDictionary: arrayItem) {
@@ -70,7 +68,6 @@ final class DeltaResponse {
             }
         }
     }
-    
     
     // MARK: - Methods
     

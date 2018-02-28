@@ -1,9 +1,9 @@
 //
-//  MicrosecondsTimeHolder.swift
+//  OperatorFactory.swift
 //  WebimClientLibrary
 //
-//  Created by Nikita Lazarev-Zubov on 15.08.17.
-//  Copyright © 2017 Webim. All rights reserved.
+//  Created by Nikita Lazarev-Zubov on 19.02.18.
+//  Copyright © 2018 Webim. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,27 @@
 import Foundation
 
 /**
+ Mapper class that is responsible for converting internal operator model objects to public ones.
  - Author:
  Nikita Lazarev-Zubov
  - Copyright:
  2017 Webim
  */
-protocol MicrosecondsTimeHolder {
+final class OperatorFactory {
     
-    func getTimeInMicrosecond() -> Int64
-
+    // MARK: - Properties
+    var serverURLString: String
+    
+    // MARK: - Initialization
+    init(withServerURLString serverURLString: String) {
+        self.serverURLString = serverURLString
+    }
+    
+    // MARK: - Methods
+    func createOperatorFrom(operatorItem: OperatorItem?) -> OperatorImpl? {
+        return ((operatorItem == nil) ? nil : OperatorImpl(id: operatorItem!.getID(),
+                                                           name: operatorItem!.getFullName(),
+                                                           avatarURLString: ((operatorItem!.getAvatarURLString() == nil) ? nil : (serverURLString + operatorItem!.getAvatarURLString()!))))
+    }
+    
 }

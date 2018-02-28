@@ -27,7 +27,7 @@
 import Foundation
 
 /**
- Class that encapsulates full chat data, received from a server.
+ Class that encapsulates full data update, received from a server.
  - Author:
  Nikita Lazarev-Zubov
  - Copyright:
@@ -38,64 +38,62 @@ struct FullUpdate {
     // MARK: - Constants
     // Raw values equal to field names received in responses from server.
     private enum JSONField: String {
-        case AUTHORIZATION_TOKEN = "authToken"
-        case CHAT = "chat"
-        case DEPARTMENTS = "departments"
-        case HINTS_ENABLED = "hintsEnabled"
-        case ONLINE_STATUS = "onlineStatus"
-        case PAGE_ID = "pageId"
-        case SESSION_ID = "visitSessionId"
-        case STATE = "state"
-        case VISITOR_JSON = "visitor"
+        case authorizationToken = "authToken"
+        case chat = "chat"
+        case departments = "departments"
+        case hintsEnabled = "hintsEnabled"
+        case onlineStatus = "onlineStatus"
+        case pageID = "pageId"
+        case sessionID = "visitSessionId"
+        case state = "state"
+        case visitor = "visitor"
     }
-    
     
     // MARK: - Properties
     private var authorizationToken: String?
     private var chat: ChatItem?
     private var departments: [DepartmentItem]?
-    private var hintsEnabled: Bool?
+    private var hintsEnabled: Bool
     private var onlineStatus: String?
     private var pageID: String?
     private var sessionID: String?
     private var state: String?
     private var visitorJSONString: String?
 
-    
     // MARK: - Initialization
     init(jsonDictionary: [String: Any?]) {
-        if let authorizationToken = jsonDictionary[JSONField.AUTHORIZATION_TOKEN.rawValue] as? String {
+        if let authorizationToken = jsonDictionary[JSONField.authorizationToken.rawValue] as? String {
             self.authorizationToken = authorizationToken
         }
         
-        if let chatValue = jsonDictionary[JSONField.CHAT.rawValue] as? [String: Any?] {
+        if let chatValue = jsonDictionary[JSONField.chat.rawValue] as? [String: Any?] {
             chat = ChatItem(jsonDictionary: chatValue)
         }
         
-        if let pageID = jsonDictionary[JSONField.PAGE_ID.rawValue] as? String {
+        if let pageID = jsonDictionary[JSONField.pageID.rawValue] as? String {
             self.pageID = pageID
         }
         
-        if let onlineStatus = jsonDictionary[JSONField.ONLINE_STATUS.rawValue] as? String {
+        if let onlineStatus = jsonDictionary[JSONField.onlineStatus.rawValue] as? String {
             self.onlineStatus = onlineStatus
         }
         
-        if let sessionID = jsonDictionary[JSONField.SESSION_ID.rawValue] as? String {
+        if let sessionID = jsonDictionary[JSONField.sessionID.rawValue] as? String {
             self.sessionID = sessionID
         }
         
-        if let state = jsonDictionary[JSONField.STATE.rawValue] as? String {
+        if let state = jsonDictionary[JSONField.state.rawValue] as? String {
             self.state = state
         }
         
-        if let visitorJSON = jsonDictionary[JSONField.VISITOR_JSON.rawValue] {
+        if let visitorJSON = jsonDictionary[JSONField.visitor.rawValue] {
             if let visitorJSONData = try? JSONSerialization.data(withJSONObject: visitorJSON!) {
                 visitorJSONString = String(data: visitorJSONData,
                                            encoding: .utf8)
             }
         }
         
-        if let departmantsData = jsonDictionary[JSONField.DEPARTMENTS.rawValue] as? [Any] {
+        if let departmantsData = jsonDictionary[JSONField.departments.rawValue] as? [Any] {
             var departmentItems = [DepartmentItem]()
             for departmentData in departmantsData {
                 if let departmentDictionary = departmentData as? [String: Any] {
@@ -106,8 +104,9 @@ struct FullUpdate {
             }
             self.departments = departmentItems
         }
+        
+        hintsEnabled = (jsonDictionary[JSONField.hintsEnabled.rawValue] as? Bool) ?? false
     }
-    
     
     // MARK: - Methods
     
@@ -123,7 +122,7 @@ struct FullUpdate {
         return chat
     }
     
-    func getHintsEnabled() -> Bool? {
+    func getHintsEnabled() -> Bool {
         return hintsEnabled
     }
     

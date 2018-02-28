@@ -39,7 +39,6 @@ final class HistoryID {
     private let dbID: String
     private let timeInMicrosecond: Int64
     
-    
     // MARK: - Initialization
     init(dbID: String,
          timeInMicrosecond: Int64) {
@@ -47,17 +46,11 @@ final class HistoryID {
         self.timeInMicrosecond = timeInMicrosecond
     }
     
-    
     // MARK: - Methods
     
     func getDBid() -> String {
         return dbID
     }
-    
-}
-
-// MARK: - MicrosecondsTimeHolder
-extension HistoryID: MicrosecondsTimeHolder {
     
     func getTimeInMicrosecond() -> Int64 {
         return timeInMicrosecond
@@ -68,6 +61,7 @@ extension HistoryID: MicrosecondsTimeHolder {
 // MARK: - Equatable
 extension HistoryID: Equatable {
     
+    // MARK: - Methods
     static func == (lhs: HistoryID,
                     rhs: HistoryID) -> Bool {
         return ((lhs.dbID == rhs.dbID)

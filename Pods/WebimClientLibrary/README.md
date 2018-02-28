@@ -1,3 +1,9 @@
+<center>
+
+![Webim logo](Documentation/Images/Logo.png)
+
+</center>
+
 # WebimClientLibrary
 
 This library provides [_Webim SDK_ for _iOS_](https://webim.ru/integration/mobile-sdk/ios-sdk-howto/) – a way to integrate _Webim_ service into your _iOS_ app.
@@ -10,7 +16,7 @@ This library provides [_Webim SDK_ for _iOS_](https://webim.ru/integration/mobil
 
 Add following line for your target in your **Podfile**:
 ```
-pod 'WebimClientLibrary', :git => 'https://github.com/webim/webim-client-sdk-ios.git', :tag => '3.13.0'
+pod 'WebimClientLibrary'
 ```
 `use_frameworks!` must be specified.
 
@@ -18,7 +24,7 @@ pod 'WebimClientLibrary', :git => 'https://github.com/webim/webim-client-sdk-ios
 
 Add following line to your **Cartfile**:
 ```
-github "webim/webim-client-sdk-ios" ~> 3.13.0
+github "webim/webim-client-sdk-ios" ~> 3.14.0
 ```
 
 ### Additional notes
@@ -31,23 +37,20 @@ Trying to integrate _WebimClientLibrary_ into your _Objective-C_ code? Try out o
 
 Previous _Objective-C_ version (version numbers 2.x.x) can be reached from **version2** branch.
 
-If you're already using previous version and don't plan to jump on the new one you don't have to update your **Podfile**, depencies on version numbers 2.7.0 and lower will work properly. But for all renewals of the previous version usage, you have to switch your depency on the **version2** branch.
-
 ## Release notes
-
-* `getUnreadByVisitorTimestamp()` method of `MessageStream` protocol logic is changed: now it returns `nil` if there's no unread by visitor messages or timestamp after which messages are unread by visitor.
-* `getID()` and `getName()` methods of `Operator` protocol now return non-optionals.
-* `CHATTING_WITH_ROBOT` chat state support added.
-* Working with local storaged messages bugs fixed.
-* Additional interaction with server provided.
-* Minor _WebimClientLibrary_ framework optimization.
+* `UnreadByOperatorTimestampChangeListener` and `UnreadByVisitorTimestampChangeListener` protocols added. They let to check updates when values that `getUnreadByOperatorTimestamp()` and `getUnreadByVisitorTimestamp()` methods of `MessageStream` protocol changed. 🕰
+* Minor improvements. 💩
+* Documentation additions and minor improvements. 📖
 
 ### Example app
-* Links display inside messages improved.
+* Minor improvements. 💩
+* [_Crashlytics_](https://try.crashlytics.com) integrated. 💥
 
 ## Example
 
-![Start screen screenshot](Screenshots/StartScreen.png) ![Settings screen screenshot](Screenshots/SettingsScreen.png) ![Chat screen screenshot](Screenshots/ChatScreen.png)
+![Start screen screenshot Classic theme](Documentation/Images/Screenshots/StartScreenClassic.png) ![Settings screen screenshot Classic theme](Documentation/Images/Screenshots/SettingsScreenClassic.png) ![Chat screen screenshot Classic theme](Documentation/Images/Screenshots/ChatScreenClassic.png) ![Image preview screenshot Classic theme](Documentation/Images/Screenshots/ImageScreenClassic.png) ![Rating window screenshot Classic theme](Documentation/Images/Screenshots/RatingScreenClassic.png)
+
+![Start screen screenshot Dark theme](Documentation/Images/Screenshots/StartScreenDark.png) ![Settings screen screenshot Dark theme](Documentation/Images/Screenshots/SettingsScreenDark.png) ![Chat screen screenshot Dark theme](Documentation/Images/Screenshots/ChatScreenDark.png) ![Image preview screenshot Dark theme](Documentation/Images/Screenshots/ImageScreenDark.png) ![Rating window screenshot Dark theme](Documentation/Images/Screenshots/RatingScreenDark.png)
 
 If you don't have _CocoaPods_ installed you should firstly run `sudo gem install cocoapods`.
 
@@ -169,6 +172,7 @@ _WebimClientLibrary_ uses [_SQLite.swift_](https://github.com/stephencelis/SQLit
 
 In the sake of ease of several functionalities implementation Example app uses (in alphabetical order):
 * [_Cosmos_](https://github.com/evgenyneu/Cosmos) – for visual implementation of operator rating mechanism.
+* [_Crashlytics_](https://try.crashlytics.com) – for detecting crashes and investigating their causes.
 * [_PopupDialog_](https://github.com/Orderella/PopupDialog) – for implemetation of pop-up dialogs.
 * [_SnapKit_](https://github.com/SnapKit/SnapKit) – for AutoLayout mechanism implementation inside the code.
 * [_SlackTextViewController_](https://github.com/slackhq/SlackTextViewController) – for chat stream displaying inside Table View.

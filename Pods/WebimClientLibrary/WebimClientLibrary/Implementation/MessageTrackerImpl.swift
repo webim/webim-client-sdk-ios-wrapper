@@ -27,6 +27,7 @@
 import Foundation
 
 /**
+ Class that is responsible for tracking changes of message stream.
  - Author:
  Nikita Lazarev-Zubov
  - Copyright:
@@ -46,14 +47,12 @@ final class MessageTrackerImpl {
     private var firstHistoryUpdateReceived: Bool?
     private var messagesLoading: Bool?
     
-    
     // MARK: - Initialization
     init(messageListener: MessageListener,
          messageHolder: MessageHolder) {
         self.messageListener = messageListener
         self.messageHolder = messageHolder
     }
-    
     
     // MARK: - Methods
     
@@ -119,7 +118,7 @@ final class MessageTrackerImpl {
             try previousVersion.getSource().assertIsCurrentChat()
         } catch {
             WebimInternalLogger.shared.log(entry: "Message which is being changed is not a part of current chat: \(previousVersion.toString()).",
-                verbosityLevel: .DEBUG)
+                                           verbosityLevel: .DEBUG)
             
             return
         }
@@ -127,34 +126,36 @@ final class MessageTrackerImpl {
             try newVersion.getSource().assertIsCurrentChat()
         } catch {
             WebimInternalLogger.shared.log(entry: "Replacement message for a current chat message is not a part of current chat: \(newVersion.toString()).",
-                verbosityLevel: .DEBUG)
+                                           verbosityLevel: .DEBUG)
             
             return
         }
         
-        if let headMessage = headMessage {
-            if headMessage.getSource().isHistoryMessage() {
-                if previousVersion == headMessage {
-                    self.headMessage = newVersion
-                }
-                
-                messageListener.changed(message: previousVersion,
-                                        to: newVersion)
-            } else {
-                let currentChatMessages = messageHolder.getCurrentChatMessages()
-                for (currentChatMessageIndex, currentChatMessage) in currentChatMessages.enumerated() {
-                    if currentChatMessage.getID() == headMessage.getID() {
-                        if index >= currentChatMessageIndex {
-                            if previousVersion == headMessage {
-                                self.headMessage = newVersion
-                            }
-                            
-                            messageListener.changed(message: previousVersion,
-                                                    to: newVersion)
+        guard let headMessage = headMessage else {
+            return
+        }
+        
+        if headMessage.getSource().isHistoryMessage() {
+            if previousVersion == headMessage {
+                self.headMessage = newVersion
+            }
+            
+            messageListener.changed(message: previousVersion,
+                                    to: newVersion)
+        } else {
+            let currentChatMessages = messageHolder.getCurrentChatMessages()
+            for (currentChatMessageIndex, currentChatMessage) in currentChatMessages.enumerated() {
+                if currentChatMessage.getID() == headMessage.getID() {
+                    if index >= currentChatMessageIndex {
+                        if previousVersion == headMessage {
+                            self.headMessage = newVersion
                         }
                         
-                        return
+                        messageListener.changed(message: previousVersion,
+                                                to: newVersion)
                     }
+                    
+                    return
                 }
             }
         }
@@ -167,35 +168,39 @@ final class MessageTrackerImpl {
             try message.getSource().assertIsCurrentChat()
         } catch {
             WebimInternalLogger.shared.log(entry: "Message which is being deleted is not a part of current chat: \(message.toString())",
-                verbosityLevel: .DEBUG)
+                                           verbosityLevel: .DEBUG)
         }
         
         let currentChatMessages = messageHolder.getCurrentChatMessages()
         
-        if let headMessage = headMessage {
-            let headIndex = currentChatMessages.index(of: headMessage) ?? -1
-            
-            if headMessage.getSource().isHistoryMessage()
-                || (index > headIndex) {
-                if headIndex == (index + 1) {
-                    self.headMessage = (currentChatMessages.count < headIndex) ? nil : currentChatMessages[headIndex]
-                }
-                
-                messageListener.removed(message: message)
+        guard let headMessage = headMessage else {
+            return
+        }
+        
+        let headIndex = currentChatMessages.index(of: headMessage) ?? -1
+        
+        if headMessage.getSource().isHistoryMessage()
+            || (index > headIndex) {
+            if headIndex == (index + 1) {
+                self.headMessage = (currentChatMessages.count < headIndex) ? nil : currentChatMessages[headIndex]
             }
+            
+            messageListener.removed(message: message)
         }
     }
     
     func endedHistoryBatch() {
-        if firstHistoryUpdateReceived != true {
-            firstHistoryUpdateReceived = true
+        guard firstHistoryUpdateReceived != true else {
+            return
+        }
+        
+        firstHistoryUpdateReceived = true
+        
+        if let completionHandler = cachedCompletionHandler {
+            getNextUncheckedMessagesBy(limit: ((cachedLimit != nil) ? cachedLimit! : 0),
+                                       completion: completionHandler.getCompletionHandler())
             
-            if let completionHandler = cachedCompletionHandler {
-                getNextUncheckedMessagesBy(limit: ((cachedLimit != nil) ? cachedLimit! : 0),
-                                           completion: completionHandler.getCompletionHandler())
-                
-                cachedCompletionHandler = nil
-            }
+            cachedCompletionHandler = nil
         }
     }
     
@@ -206,11 +211,13 @@ final class MessageTrackerImpl {
         
         idToHistoryMessageMap[messageID] = nil
         
-        if let headMessage = headMessage {
-            if headMessage.getSource().isHistoryMessage()
-                && (message.getTimeInMicrosecond() >= headMessage.getTimeInMicrosecond()) {
-                messageListener.removed(message: message)
-            }
+        guard let headMessage = headMessage else {
+            return
+        }
+        
+        if headMessage.getSource().isHistoryMessage()
+            && (message.getTimeInMicrosecond() >= headMessage.getTimeInMicrosecond()) {
+            messageListener.removed(message: message)
         }
     }
     
@@ -219,23 +226,23 @@ final class MessageTrackerImpl {
             try message.getSource().assertIsHistory()
         } catch {
             WebimInternalLogger.shared.log(entry: "Message which is being changed is not a part of history: \(message.toString()).",
-                                           verbosityLevel: .DEBUG)
+                verbosityLevel: .DEBUG)
         }
         
+        guard let headMessage = headMessage,
+            headMessage.getSource().isHistoryMessage(),
+            (message.getTimeInMicrosecond() >= headMessage.getTimeInMicrosecond()) else {
+                return
+        }
         
-        if let headMessage = headMessage {
-            if headMessage.getSource().isHistoryMessage()
-                && (message.getTimeInMicrosecond() >= headMessage.getTimeInMicrosecond()) {
-                let previousMessage: MessageImpl? = idToHistoryMessageMap[message.getHistoryID()!.getDBid()]
-                idToHistoryMessageMap[message.getHistoryID()!.getDBid()] = message
-                if previousMessage != nil {
-                    messageListener.changed(message: previousMessage!,
-                                            to: message)
-                } else {
-                    WebimInternalLogger.shared.log(entry: "Unknown message was changed: \(message.toString())",
-                                                   verbosityLevel: .DEBUG)
-                }
-            }
+        let previousMessage: MessageImpl? = idToHistoryMessageMap[message.getHistoryID()!.getDBid()]
+        idToHistoryMessageMap[message.getHistoryID()!.getDBid()] = message
+        if previousMessage != nil {
+            messageListener.changed(message: previousMessage!,
+                                    to: message)
+        } else {
+            WebimInternalLogger.shared.log(entry: "Unknown message was changed: \(message.toString())",
+                verbosityLevel: .DEBUG)
         }
     }
     
@@ -245,26 +252,28 @@ final class MessageTrackerImpl {
             try message.getSource().assertIsHistory()
         } catch {
             WebimInternalLogger.shared.log(entry: "Message which is being added is not a part of history: \(message.toString()).",
-                                           verbosityLevel: .DEBUG)
+                verbosityLevel: .DEBUG)
+            
+            return
         }
         
+        guard let headMessage = headMessage,
+            headMessage.getSource().isHistoryMessage() else {
+                return
+        }
         
-        if headMessage != nil {
-            if headMessage!.getSource().isHistoryMessage() {
-                if let beforeID = id {
-                    if let beforeMessage = idToHistoryMessageMap[beforeID.getDBid()] {
-                        idToHistoryMessageMap[message.getHistoryID()!.getDBid()] = message
-                        messageListener.added(message: message,
-                                              after: beforeMessage)
-                    }
-                } else {
-                    idToHistoryMessageMap[message.getHistoryID()!.getDBid()] = message
-                    let currentChatMessages = messageHolder.getCurrentChatMessages()
-                    messageListener.added(message: message,
-                                          after: (currentChatMessages.isEmpty ? nil : currentChatMessages.first!))
-                }
+        if let beforeID = id {
+            if let beforeMessage = idToHistoryMessageMap[beforeID.getDBid()] {
+                messageListener.added(message: message,
+                                      after: beforeMessage)
             }
+        } else {
+            let currentChatMessages = messageHolder.getCurrentChatMessages()
+            messageListener.added(message: message,
+                                  after: (currentChatMessages.isEmpty ? nil : currentChatMessages.first!))
         }
+        
+        idToHistoryMessageMap[message.getHistoryID()!.getDBid()] = message
     }
     
     // For testing purposes.
@@ -379,7 +388,6 @@ final class MessageTrackerImpl {
                          completion: @escaping ([Message]) -> ()) {
         var result: [MessageImpl]?
         
-        // FIXME: Refactor this.
         if !messages.isEmpty {
             let currentChatMessages = messageHolder.getCurrentChatMessages()
             if !currentChatMessages.isEmpty {
@@ -438,13 +446,12 @@ final class MessageTrackerImpl {
             
             let firstMessage = result!.first!
             
-            // FIXME: Refactor this.
             if headMessage == nil {
                 headMessage = firstMessage
             } else if firstMessage.getTimeInMicrosecond() < headMessage!.getTimeInMicrosecond() {
                 headMessage = firstMessage
             }
-        } else {
+        } else { // End `if !messages.isEmpty`
             result = messages
             
             allMessageSourcesEnded = true

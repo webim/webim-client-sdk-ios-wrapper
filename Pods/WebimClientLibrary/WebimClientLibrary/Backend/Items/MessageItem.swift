@@ -36,77 +36,21 @@ import Foundation
 final class MessageItem {
     
     // MARK: - Constants
-    
     // Raw values equal to field names received in responses from server.
-    
-    enum MessageKind: String {
-        
-        case ACTION_REQUEST = "action_request"
-        case CONTACTS_REQUEST = "cont_req"
-        case CONTACTS = "contacts"
-        case FILE_FROM_OPERATOR = "file_operator"
-        case FILE_FROM_VISITOR = "file_visitor"
-        case FOR_OPERATOR = "for_operator"
-        case INFO = "info"
-        case OPERATOR = "operator"
-        case OPERATOR_BUSY = "operator_busy"
-        case VISITOR = "visitor"
-        
-        // MARK: - Initialization
-        init(messageType: MessageType) {
-            switch messageType {
-            case .ACTION_REQUEST:
-                self = .ACTION_REQUEST
-                
-                break
-            case .CONTACTS_REQUEST:
-                self = .CONTACTS_REQUEST
-                
-                break
-            case .FILE_FROM_OPERATOR:
-                self = .FILE_FROM_OPERATOR
-                
-                break
-            case .FILE_FROM_VISITOR:
-                self = .FILE_FROM_VISITOR
-                
-                break
-            case .INFO:
-                self = .INFO
-                
-                break
-            case .OPERATOR:
-                self = .OPERATOR
-                
-                break
-            case .OPERATOR_BUSY:
-                self = .OPERATOR_BUSY
-                
-                break
-            case .VISITOR:
-                self = .VISITOR
-                
-                break
-            }
-        }
-        
-    }
-    
     private enum JSONField: String {
-        case AUTHOR_ID = "authorId"
-        case AVATAR_URL_STRING = "avatar"
-        case CHAT_ID = "chatId"
-        case CLIENT_SIDE_ID = "clientSideId"
-        case DATA = "data"
-        case DELETED = "deleted"
-        case ID = "id"
-        case KIND = "kind"
-        case SENDER_NAME = "name"
-        case TEXT = "text"
-        case TIMESTAMP_IN_MICROSECOND = "ts_m"
-        case TIMESTAMP_IN_SECOND = "ts"
+        case authorID = "authorId"
+        case avatarURLString = "avatar"
+        case chatID = "chatId"
+        case clientSideID = "clientSideId"
+        case data = "data"
+        case deleted = "deleted"
+        case id = "id"
+        case kind = "kind"
+        case senderName = "name"
+        case text = "text"
+        case timestampInMicrosecond = "ts_m"
+        case timestampInSecond = "ts"
     }
-    
     
     // MARK: - Properties
     private var authorID: String?
@@ -122,58 +66,56 @@ final class MessageItem {
     private var timestampInMicrosecond: Int64 = -1
     private var timestampInSecond: Double?
     
-    
     // MARK: - Initialization
     init(jsonDictionary: [String: Any?]) {
-        if let messageKind = jsonDictionary[JSONField.KIND.rawValue] as? String {
+        if let messageKind = jsonDictionary[JSONField.kind.rawValue] as? String {
             kind = MessageKind(rawValue: messageKind)
         }
         
-        if let authorID = jsonDictionary[JSONField.AUTHOR_ID.rawValue] as? Int {
+        if let authorID = jsonDictionary[JSONField.authorID.rawValue] as? Int {
             self.authorID = String(authorID)
         }
         
-        if let avatarURLString = jsonDictionary[JSONField.AVATAR_URL_STRING.rawValue] as? String {
+        if let avatarURLString = jsonDictionary[JSONField.avatarURLString.rawValue] as? String {
             self.avatarURLString = avatarURLString
         }
         
-        if let chatID = jsonDictionary[JSONField.CHAT_ID.rawValue] as? String {
+        if let chatID = jsonDictionary[JSONField.chatID.rawValue] as? String {
             self.chatID = chatID
         }
         
-        if let clientSideID = jsonDictionary[JSONField.CLIENT_SIDE_ID.rawValue] as? String {
+        if let clientSideID = jsonDictionary[JSONField.clientSideID.rawValue] as? String {
             self.clientSideID = clientSideID
         }
         
-        if let data = jsonDictionary[JSONField.DATA.rawValue] as? [String: Any?] {
+        if let data = jsonDictionary[JSONField.data.rawValue] as? [String: Any?] {
             self.data = data
         }
         
-        if let deleted = jsonDictionary[JSONField.DELETED.rawValue] as? Bool {
+        if let deleted = jsonDictionary[JSONField.deleted.rawValue] as? Bool {
             self.deleted = deleted
         }
         
-        if let id = jsonDictionary[JSONField.ID.rawValue] as? String {
+        if let id = jsonDictionary[JSONField.id.rawValue] as? String {
             self.id = id
         }
         
-        if let senderName = jsonDictionary[JSONField.SENDER_NAME.rawValue] as? String {
+        if let senderName = jsonDictionary[JSONField.senderName.rawValue] as? String {
             self.senderName = senderName
         }
         
-        if let text = jsonDictionary[JSONField.TEXT.rawValue] as? String {
+        if let text = jsonDictionary[JSONField.text.rawValue] as? String {
             self.text = text
         }
         
-        if let timestampInMicrosecond = jsonDictionary[JSONField.TIMESTAMP_IN_MICROSECOND.rawValue] as? Int64 {
+        if let timestampInMicrosecond = jsonDictionary[JSONField.timestampInMicrosecond.rawValue] as? Int64 {
             self.timestampInMicrosecond = timestampInMicrosecond
         }
         
-        if let timestampInSecond = jsonDictionary[JSONField.TIMESTAMP_IN_SECOND.rawValue] as? Double {
+        if let timestampInSecond = jsonDictionary[JSONField.timestampInSecond.rawValue] as? Double {
             self.timestampInSecond = timestampInSecond
         }
     }
-    
     
     // MARK: - Methods
     
@@ -221,11 +163,66 @@ final class MessageItem {
         return ((timestampInMicrosecond != -1) ? timestampInMicrosecond : Int64(timestampInSecond! * 1_000_000))
     }
     
+    // MARK: -
+    enum MessageKind: String {
+        // Raw values equal to field names received in responses from server.
+        case actionRequest = "action_request"
+        case contactInformationRequest = "cont_req"
+        case contactInformation = "contacts"
+        case fileFromOperator = "file_operator"
+        case fileFromVisitor = "file_visitor"
+        case forOperator = "for_operator"
+        case info = "info"
+        case operatorMessage = "operator"
+        case operatorBusy = "operator_busy"
+        case visitorMessage = "visitor"
+        
+        // MARK: - Initialization
+        init(messageType: MessageType) {
+            switch messageType {
+            case .ACTION_REQUEST:
+                self = .actionRequest
+                
+                break
+            case .CONTACTS_REQUEST:
+                self = .contactInformationRequest
+                
+                break
+            case .FILE_FROM_OPERATOR:
+                self = .fileFromOperator
+                
+                break
+            case .FILE_FROM_VISITOR:
+                self = .fileFromVisitor
+                
+                break
+            case .INFO:
+                self = .info
+                
+                break
+            case .OPERATOR:
+                self = .operatorMessage
+                
+                break
+            case .OPERATOR_BUSY:
+                self = .operatorBusy
+                
+                break
+            case .VISITOR:
+                self = .visitorMessage
+                
+                break
+            }
+        }
+        
+    }
+    
 }
 
 // MARK: - Equatable
 extension MessageItem: Equatable {
     
+    // MARK: - Methods
     static func == (lhs: MessageItem,
                     rhs: MessageItem) -> Bool {
         if (((lhs.id == rhs.id)

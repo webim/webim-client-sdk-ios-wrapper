@@ -36,22 +36,21 @@ import Foundation
 class AbstractRequestLoop {
     
     // MARK: - Constants
-    enum HTTPMethod: String {
-        case GET = "GET"
-        case POST = "POST"
+    enum HTTPMethods: String {
+        case get = "GET"
+        case post = "POST"
     }
-    enum ResponseField: String {
-        case DATA = "data"
-        case ERROR = "error"
+    enum ResponseFields: String {
+        case data = "data"
+        case error = "error"
     }
-    enum DataField: String {
-        case ERROR = "error"
+    enum DataFields: String {
+        case error = "error"
     }
     enum UnknownError: Error {
-        case INTERRUPTED
-        case SERVER_ERROR
+        case interrupted
+        case serverError
     }
-    
     
     // MARK: - Properties
     private let pauseCondition = NSCondition()
@@ -59,7 +58,6 @@ class AbstractRequestLoop {
     var paused = true
     var running = true
     private var currentDataTask: URLSessionDataTask?
-    
     
     // MARK: - Methods
     
@@ -167,57 +165,53 @@ class AbstractRequestLoop {
                 return receivedData
             }
             
-            if httpCode != 502 { // Bad Gateway
-                if httpCode == 413 {
-                    // Request Entity Too Large
-                    throw SendFileError.FILE_SIZE_EXCEEDED
-                }
-                
-                if httpCode == 415 {
-                    // Unsupported Media Type
-                    throw SendFileError.FILE_TYPE_NOT_ALLOWED
-                }
-                
-                if httpCode == lastHTTPCode {
-                    var parametersString: String?
-                    if let httpBody = request.httpBody {
-                        parametersString = String(data: httpBody,
-                                                  encoding: .utf8)
-                    }
-                    WebimInternalLogger.shared.log(entry: "Request \(request.url!.absoluteString)"
-                        + "\((parametersString != nil) ? " \(parametersString!)" : "") "
-                        + "failed with HTTP code: \(httpCode).",
-                        verbosityLevel: .WARNING)
-                }
-                
-                errorCounter += 1
+            if httpCode == 413 { // Request Entity Too Large
+                throw SendFileError.FILE_SIZE_EXCEEDED
             }
+            if httpCode == 415 { // Unsupported Media Type
+                throw SendFileError.FILE_TYPE_NOT_ALLOWED
+            }
+            
+            if httpCode == lastHTTPCode {
+                var parametersString: String?
+                if let httpBody = request.httpBody {
+                    parametersString = String(data: httpBody,
+                                              encoding: .utf8)
+                }
+                WebimInternalLogger.shared.log(entry: "Request \(request.url!.absoluteString)"
+                    + "\((parametersString != nil) ? " \(parametersString!)" : "") "
+                    + "failed with HTTP code: \(httpCode).",
+                    verbosityLevel: .WARNING)
+            }
+            
+            errorCounter += 1
             
             lastHTTPCode = httpCode
             
             // If request wasn't successful and error isn't fatal, wait some time and try again.
             if (errorCounter >= 5) {
                 // If there was more that five tries stop trying.
-                throw UnknownError.SERVER_ERROR
+                throw UnknownError.serverError
             }
             let sleepTime = Double(errorCounter) as TimeInterval
             let timeElapsed = Date().timeIntervalSince(startTime)
             if Double(timeElapsed) < Double(sleepTime) {
                 let remainingTime = Double(sleepTime) - Double(timeElapsed)
-                usleep(useconds_t(remainingTime * 1000000.0))
+                usleep(useconds_t(remainingTime * 1_000_000.0))
             }
         }
         
-        throw UnknownError.INTERRUPTED
+        throw UnknownError.interrupted
     }
     
     func handleRequestLoop(error: UnknownError) {
         switch error {
-        case .INTERRUPTED:
-            WebimInternalLogger.shared.log(entry: "Request failed with application internal error.")
+        case .interrupted:
+            WebimInternalLogger.shared.log(entry: "Request interrupted (it's OK if WebimSession object was destroyed).",
+                                           verbosityLevel: .DEBUG)
             
             break
-        case .SERVER_ERROR:
+        case .serverError:
             WebimInternalLogger.shared.log(entry: "Request failed with server error.")
             
             break

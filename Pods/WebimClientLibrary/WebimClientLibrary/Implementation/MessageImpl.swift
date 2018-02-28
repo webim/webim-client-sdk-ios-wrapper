@@ -26,7 +26,6 @@
 
 import Foundation
 
-
 /**
  Internal messages representasion.
  - Author:
@@ -52,7 +51,6 @@ class MessageImpl {
     private var data: [String: Any?]?
     private var historyID: HistoryID?
     private var historyMessage: Bool
-    
     
     // MARK: - Initialization
     init(serverURLString: String,
@@ -91,7 +89,6 @@ class MessageImpl {
         }
     }
     
-    
     // MARK: - Methods
     
     func getRawText() -> String? {
@@ -100,6 +97,10 @@ class MessageImpl {
     
     func getSenderAvatarURLString() -> String? {
         return senderAvatarURLString
+    }
+    
+    func getTimeInMicrosecond() -> Int64 {
+        return timeInMicrosecond
     }
     
     func hasHistoryComponent() -> Bool {
@@ -129,7 +130,7 @@ class MessageImpl {
     }
     
     func getSource() -> MessageSource {
-        return (historyMessage ? MessageSource.HISTORY : MessageSource.CURRENT_CHAT)
+        return (historyMessage ? MessageSource.history : MessageSource.currentChat)
     }
     
     func transferToCurrentChat(message: MessageImpl) -> MessageImpl {
@@ -197,30 +198,29 @@ class MessageImpl {
     }
     
     func toString() -> String {
-        return "MessageImpl { \n" +
-            "serverURLString = \(serverURLString),\n" +
-            "ID = \(id),\n" +
-            "operatorID = \((operatorID != nil) ? operatorID! : "nil"),\n" +
-            "senderAvatarURLString = \((senderAvatarURLString != nil) ? senderAvatarURLString! : "nil"),\n" +
-            "senderName = \(senderName),\n" +
-            "type = \(type),\n" +
-            "text = \(text),\n" +
-            "timeInMicrosecond = \(timeInMicrosecond),\n" +
-            "attachment = \((attachment == nil) ? "nil" : attachment!.getURL().absoluteString),\n" +
-            "historyMessage = \(historyMessage),\n" +
-            "currentChatID = \((currentChatID != nil) ? currentChatID! : "nil"),\n" +
-            "historyID = \((historyID != nil) ? historyID!.getDBid() : "nil"),\n" +
-            "rawText = \((rawText != nil) ? rawText! : "nil")\n" +
-        "}"
+        return """
+MessageImpl {
+    serverURLString = \(serverURLString),
+    ID = \(id),
+    operatorID = \((operatorID != nil) ? operatorID! : "nil"),
+    senderAvatarURLString = \((senderAvatarURLString != nil) ? senderAvatarURLString! : "nil"),
+    senderName = \(senderName),
+    type = \(type),
+    text = \(text),
+    timeInMicrosecond = \(timeInMicrosecond),
+    attachment = \((attachment == nil) ? "nil" : attachment!.getURL().absoluteString),
+    historyMessage = \(historyMessage),
+    currentChatID = \((currentChatID != nil) ? currentChatID! : "nil"),
+    historyID = \((historyID != nil) ? historyID!.getDBid() : "nil"),
+    rawText = \((rawText != nil) ? rawText! : "nil")
+}
+"""
     }
-    
     
     // MARK: -
     enum MessageSource {
-        
-        case HISTORY
-        case CURRENT_CHAT
-        
+        case history
+        case currentChat
         
         // MARK: - Methods
         
@@ -237,11 +237,11 @@ class MessageImpl {
         }
         
         func isHistoryMessage() -> Bool {
-            return (self == .HISTORY)
+            return (self == .history)
         }
         
         func isCurrentChatMessage() -> Bool {
-            return (self == .CURRENT_CHAT)
+            return (self == .currentChat)
         }
         
     }
@@ -295,7 +295,7 @@ extension MessageImpl: Message {
     }
     
     func getTime() -> Date {
-        return Date(timeIntervalSince1970: TimeInterval(timeInMicrosecond / 1000000))
+        return Date(timeIntervalSince1970: TimeInterval(timeInMicrosecond / 1_000_000))
     }
     
     func getType() -> MessageType {
@@ -304,15 +304,6 @@ extension MessageImpl: Message {
     
     func isEqual(to message: Message) -> Bool {
         return (self == message as! MessageImpl)
-    }
-    
-}
-
-// MARK: - MicrosecondsTimeHolder
-extension MessageImpl: MicrosecondsTimeHolder {
-    
-    func getTimeInMicrosecond() -> Int64 {
-        return timeInMicrosecond
     }
     
 }
@@ -334,7 +325,6 @@ extension MessageImpl: Equatable {
     
 }
 
-
 // MARK: -
 /**
  Internal messages' attachments representation.
@@ -347,7 +337,7 @@ final class MessageAttachmentImpl {
     
     // MARK: - Constants
     private enum Period: Int64 {
-        case ATTACHMENT_URL_EXPIRES_PERIOD = 300 // (seconds) = 5 (minutes).
+        case attachmentURLExpires = 300 // (seconds) = 5 (minutes).
     }
     
     
@@ -371,7 +361,6 @@ final class MessageAttachmentImpl {
         self.contentType = contentType
         self.imageInfo = imageInfo
     }
-    
     
     // MARK: - Methods
     static func getAttachment(byServerURL serverURLString: String,
@@ -400,10 +389,10 @@ final class MessageAttachmentImpl {
                 return nil
         }
         
-        let expires = Int64(Date().timeIntervalSince1970) + Period.ATTACHMENT_URL_EXPIRES_PERIOD.rawValue
+        let expires = Int64(Date().timeIntervalSince1970) + Period.attachmentURLExpires.rawValue
         let data: String = guid + String(expires)
         if let hash = data.hmacSHA256(withKey: authorizationToken) {
-            let fileURLString = serverURLString + WebimActions.ServerPathSuffix.DOWNLOAD_FILE.rawValue + "/"
+            let fileURLString = serverURLString + WebimActions.ServerPathSuffix.downloadFile.rawValue + "/"
                 + guid + "/"
                 + filename.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)! + "?"
                 + "page-id" + "=" + pageID + "&"
@@ -422,7 +411,6 @@ final class MessageAttachmentImpl {
             return nil
         }
     }
-    
     
     // MARK: Private methods
     private static func extractImageInfoOf(fileParameters: FileParametersItem?,
@@ -474,7 +462,6 @@ extension MessageAttachmentImpl: MessageAttachment {
     
 }
 
-
 // MARK: -
 /**
  Internal image information representation.
@@ -492,7 +479,6 @@ final class ImageInfoImpl: ImageInfo {
     private let width: Int?
     private let height: Int?
     
-    
     // MARK: - Initialization
     init(withThumbURLString thumbURLString: String,
          width: Int?,
@@ -501,7 +487,6 @@ final class ImageInfoImpl: ImageInfo {
         self.width = width
         self.height = height
     }
-    
     
     // MARK: - Methods
     // MARK: ImageInfo protocol methods
