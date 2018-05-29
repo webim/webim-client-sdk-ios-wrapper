@@ -24,7 +24,7 @@ pod 'WebimClientLibrary'
 
 Add following line to your **Cartfile**:
 ```
-github "webim/webim-client-sdk-ios" ~> 3.14.0
+github "webim/webim-client-sdk-ios" ~> 3.17.3
 ```
 
 ### Additional notes
@@ -38,13 +38,8 @@ Trying to integrate _WebimClientLibrary_ into your _Objective-C_ code? Try out o
 Previous _Objective-C_ version (version numbers 2.x.x) can be reached from **version2** branch.
 
 ## Release notes
-* `UnreadByOperatorTimestampChangeListener` and `UnreadByVisitorTimestampChangeListener` protocols added. They let to check updates when values that `getUnreadByOperatorTimestamp()` and `getUnreadByVisitorTimestamp()` methods of `MessageStream` protocol changed. 🕰
-* Minor improvements. 💩
-* Documentation additions and minor improvements. 📖
-
-### Example app
-* Minor improvements. 💩
-* [_Crashlytics_](https://try.crashlytics.com) integrated. 💥
+* Request queue keeps order.
+* Weak references added again.
 
 ## Example
 
@@ -120,7 +115,9 @@ Specific remote notification object can be getted through `Webim` class `parse(r
 
 **MessageStream.swift** also contains additional protocols descriptions which can be implemented by an app classes for tracking different particular changes. E.g. `ChatStateListener` protocol methods are called when chat state is changed (all the specific chat states are described in the same file).
 
-### Remote notifications
+## Remote notifications
+
+**For remote notifications to be enabled you should send your app certificates/private key to us. For more information please contact to our support!**
 
 For iOS to be able to handle remote notifications automatically your app must be aware of possible remote notification types and arguments.
 

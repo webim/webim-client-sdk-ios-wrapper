@@ -28,9 +28,9 @@ import Foundation
 
 /**
  Class that handles HTTP-request sending by SDK.
- - Author:
+ - author:
  Nikita Lazarev-Zubov
- - Copyright:
+ - copyright:
  2017 Webim
  */
 class AbstractRequestLoop {
@@ -97,7 +97,7 @@ class AbstractRequestLoop {
         
         while isRunning() {
             let startTime = Date()
-            var httpCode = 200
+            var httpCode = 0
             
             let semaphore = DispatchSemaphore(value: 0)
             var receivedData: Data? = nil
@@ -129,7 +129,9 @@ class AbstractRequestLoop {
                     webimLoggerEntry += "\nError – " + error!.localizedDescription
                     WebimInternalLogger.shared.log(entry: webimLoggerEntry)
                     
-                    return
+                    if let error = error as NSError?, !(error.domain == NSURLErrorDomain && error.code == NSURLErrorNotConnectedToInternet) {
+                        return
+                    }
                 }
                 
                 if let data = data {
@@ -152,12 +154,17 @@ class AbstractRequestLoop {
             }
             currentDataTask = dataTask
             dataTask.resume()
+           
             _ = semaphore.wait(timeout: .distantFuture)
             currentDataTask = nil
             blockUntilPaused()
             
             if !isRunning() {
                 break
+            }
+            
+            if httpCode == 0 {
+                continue
             }
             
             if let receivedData = receivedData,
@@ -179,7 +186,7 @@ class AbstractRequestLoop {
                                               encoding: .utf8)
                 }
                 WebimInternalLogger.shared.log(entry: "Request \(request.url!.absoluteString)"
-                    + "\((parametersString != nil) ? " \(parametersString!)" : "") "
+                    + "\(parametersString ?? "") "
                     + "failed with HTTP code: \(httpCode).",
                     verbosityLevel: .WARNING)
             }

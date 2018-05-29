@@ -28,9 +28,9 @@ import Foundation
 
 /**
  Class that handles HTTP-requests sended by WebimClientLibrary with visitor requested actions (e.g. sending messages, operator rating, chat closing etc.).
- - Author:
+ - author:
  Nikita Lazarev-Zubov
- - Copyright:
+ - copyright:
  2017 Webim
  */
 class ActionRequestLoop: AbstractRequestLoop {
@@ -57,6 +57,7 @@ class ActionRequestLoop: AbstractRequestLoop {
         }
         
         operationQueue = OperationQueue()
+        operationQueue?.maxConcurrentOperationCount = 1
         operationQueue?.qualityOfService = .userInitiated
     }
     
@@ -72,9 +73,17 @@ class ActionRequestLoop: AbstractRequestLoop {
     }
     
     func enqueue(request: WebimRequest) {
-        operationQueue?.addOperation {
+        operationQueue?.addOperation { [weak self] in
+            guard let `self` = self else {
+                return
+            }
+            
             if self.authorizationData == nil {
-                self.authorizationData = self.awaitForNewAuthorizationData(withLastAuthorizationData: nil)
+                do {
+                    try self.authorizationData = self.awaitForNewAuthorizationData(withLastAuthorizationData: nil)
+                } catch {
+                    return
+                }
             }
             let usedAuthorizationData = self.authorizationData!
             
@@ -119,7 +128,11 @@ class ActionRequestLoop: AbstractRequestLoop {
                     if let error = dataJSON?[AbstractRequestLoop.ResponseFields.error.rawValue] as? String {
                         switch error {
                         case WebimInternalError.reinitializationRequired.rawValue:
-                            self.authorizationData = self.awaitForNewAuthorizationData(withLastAuthorizationData: usedAuthorizationData)
+                            do {
+                                try self.authorizationData = self.awaitForNewAuthorizationData(withLastAuthorizationData: nil)
+                            } catch {
+                                return
+                            }
                             self.enqueue(request: request)
                             
                             break
@@ -193,10 +206,15 @@ class ActionRequestLoop: AbstractRequestLoop {
     
     // MARK: Private methods
     
-    private func awaitForNewAuthorizationData(withLastAuthorizationData lastAuthorizationData: AuthorizationData?) -> AuthorizationData {
+    private func awaitForNewAuthorizationData(withLastAuthorizationData lastAuthorizationData: AuthorizationData?) throws -> AuthorizationData {
         while isRunning()
             && (lastAuthorizationData == authorizationData) {
                 usleep(100_000) // 0.1 s.
+        }
+        
+        if authorizationData == nil {
+            // Interrupted request.
+            throw AbstractRequestLoop.UnknownError.interrupted
         }
         
         return authorizationData!
@@ -233,10 +251,18 @@ class ActionRequestLoop: AbstractRequestLoop {
         if let sendFileCompletionHandler = webimRequest.getSendFileCompletionHandler() {
             completionHandlerExecutor.execute(task: DispatchWorkItem {
                 let sendFileError: SendFileError
-                if errorString == WebimInternalError.fileSizeExceeded.rawValue {
+                switch errorString {
+                case WebimInternalError.fileSizeExceeded.rawValue:
                     sendFileError = .FILE_SIZE_EXCEEDED
-                } else {
+                    break
+                case WebimInternalError.fileTypeNotAllowed.rawValue:
                     sendFileError = .FILE_TYPE_NOT_ALLOWED
+                    break
+                case WebimInternalError.uploadedFileNotFound.rawValue:
+                    sendFileError = .UPLOADED_FILE_NOT_FOUND
+                    break
+                default:
+                    sendFileError = .UNKNOWN
                 }
                 
                 sendFileCompletionHandler.onFailure(messageID: webimRequest.getMessageID()!,

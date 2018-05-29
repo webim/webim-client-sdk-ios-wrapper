@@ -55,7 +55,7 @@ protocol _ObjCMessageListener {
 final class MessageListenerWrapper: MessageListener {
     
     // MARK: - Properties
-    private let messageListener: _ObjCMessageListener
+    private weak var messageListener: _ObjCMessageListener?
     
     
     // MARK: - Initialization
@@ -69,21 +69,21 @@ final class MessageListenerWrapper: MessageListener {
     
     func added(message newMessage: Message,
                after previousMessage: Message?) {
-        messageListener.added(message: _ObjCMessage(message: newMessage),
+        messageListener?.added(message: _ObjCMessage(message: newMessage),
                               after: ((previousMessage == nil) ? nil : _ObjCMessage(message: previousMessage!)))
     }
     
     func removed(message: Message) {
-        messageListener.removed(message: _ObjCMessage(message: message))
+        messageListener?.removed(message: _ObjCMessage(message: message))
     }
     
     func removedAllMessages() {
-        messageListener.removedAllMessages()
+        messageListener?.removedAllMessages()
     }
     
     func changed(message oldVersion: Message,
                  to newVersion: Message) {
-        messageListener.changed(message: _ObjCMessage(message: oldVersion),
+        messageListener?.changed(message: _ObjCMessage(message: oldVersion),
                                 to: _ObjCMessage(message: newVersion))
     }
     

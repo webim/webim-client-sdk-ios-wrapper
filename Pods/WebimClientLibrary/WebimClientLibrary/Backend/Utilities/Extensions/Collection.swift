@@ -29,9 +29,10 @@ import Foundation
 extension Collection {
     
     /**
-     - Author:
+     Part or HMAC SHA256 generation system.
+     - author:
      Nikita Lazarev-Zubov
-     - Copyright:
+     - copyright:
      2018 Webim
      */
     func batched(by size: IndexDistance) -> BatchedCollection<Self> {
@@ -43,9 +44,10 @@ extension Collection {
 
 // MARK: -
 /**
- - Author:
+ Part or HMAC SHA256 generation system.
+ - author:
  Nikita Lazarev-Zubov
- - Copyright:
+ - copyright:
  2018 Webim
  */
 struct BatchedCollection<Base: Collection>: Collection {
@@ -90,17 +92,19 @@ extension BatchedCollectionIndex: Comparable {
         return (lhs.range.lowerBound == rhs.range.lowerBound)
     }
     
-    static func < <Base>(lhs: BatchedCollectionIndex<Base>,
-                         rhs: BatchedCollectionIndex<Base>) -> Bool {
+    static func <<Base>(lhs: BatchedCollectionIndex<Base>,
+                        rhs: BatchedCollectionIndex<Base>) -> Bool {
         return (lhs.range.lowerBound < rhs.range.lowerBound)
     }
+    
 }
 
 // MARK: -
 /**
- - Author:
+ Part or HMAC SHA256 generation system.
+ - author:
  Nikita Lazarev-Zubov
- - Copyright:
+ - copyright:
  2018 Webim
  */
 struct BatchedCollectionIndex<Base: Collection> {

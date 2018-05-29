@@ -27,16 +27,17 @@
 import Foundation
 
 /**
- - Author:
+ Class that responsible for handling full set of events inside message stream.
+ - author:
  Nikita Lazarev-Zubov
- - Copyright:
+ - copyright:
  2017 Webim
  */
 final class MessageStreamImpl {
     
     // MARK: - Properties
     private let accessChecker: AccessChecker
-    private let currentChatMessageFactoriesMapper: MessageFactoriesMapper
+    private let currentChatMessageFactoriesMapper: MessageMapper
     private let locationSettingsHolder: LocationSettingsHolder
     private let messageComposingHandler: MessageComposingHandler
     private let messageHolder: MessageHolder
@@ -44,29 +45,31 @@ final class MessageStreamImpl {
     private let serverURLString: String
     private let webimActions: WebimActions
     private var chat: ChatItem?
-    private var chatStateListener: ChatStateListener?
+    private weak var chatStateListener: ChatStateListener?
     private var currentOperator: OperatorImpl?
     private var departmentList: [Department]?
-    private var departmentListChangeListener: DepartmentListChangeListener?
-    private var currentOperatorChangeListener: CurrentOperatorChangeListener?
+    private weak var departmentListChangeListener: DepartmentListChangeListener?
+    private weak var currentOperatorChangeListener: CurrentOperatorChangeListener?
     private var isChatIsOpening = false
     private var lastChatState: ChatItem.ChatItemState = .unknown
     private var lastOperatorTypingStatus: Bool?
-    private var locationSettingsChangeListener: LocationSettingsChangeListener?
+    private weak var locationSettingsChangeListener: LocationSettingsChangeListener?
     private var operatorFactory: OperatorFactory
-    private var operatorTypingListener: OperatorTypingListener?
+    private weak var operatorTypingListener: OperatorTypingListener?
     private var onlineStatus: OnlineStatusItem = .unknown
-    private var onlineStatusChangeListener: OnlineStatusChangeListener?
+    private weak var onlineStatusChangeListener: OnlineStatusChangeListener?
     private var unreadByOperatorTimestamp: Date?
-    private var unreadByOperatorTimestampChangeListener: UnreadByOperatorTimestampChangeListener?
+    private weak var unreadByOperatorTimestampChangeListener: UnreadByOperatorTimestampChangeListener?
+    private var unreadByVisitorMessageCount: Int
+    private weak var unreadByVisitorMessageCountChangeListener: UnreadByVisitorMessageCountChangeListener?
     private var unreadByVisitorTimestamp: Date?
-    private var unreadByVisitorTimestampChangeListener: UnreadByVisitorTimestampChangeListener?
+    private weak var unreadByVisitorTimestampChangeListener: UnreadByVisitorTimestampChangeListener?
     private var visitSessionState: VisitSessionStateItem = .unknown
-    private var visitSessionStateListener: VisitSessionStateListener?
+    private weak var visitSessionStateListener: VisitSessionStateListener?
     
     // MARK: - Initialization
     init(serverURLString: String,
-         currentChatMessageFactoriesMapper: MessageFactoriesMapper,
+         currentChatMessageFactoriesMapper: MessageMapper,
          sendingMessageFactory: SendingFactory,
          operatorFactory: OperatorFactory,
          accessChecker: AccessChecker,
@@ -83,6 +86,7 @@ final class MessageStreamImpl {
         self.messageHolder = messageHolder
         self.messageComposingHandler = messageComposingHandler
         self.locationSettingsHolder = locationSettingsHolder
+        self.unreadByVisitorMessageCount = -1
     }
     
     // MARK: - Methods
@@ -125,6 +129,16 @@ final class MessageStreamImpl {
         }
     }
     
+    func set(unreadByVisitorMessageCount: Int) {
+        let previousValue = self.unreadByVisitorMessageCount
+        
+        self.unreadByVisitorMessageCount = unreadByVisitorMessageCount
+        
+        if previousValue != unreadByVisitorMessageCount {
+            unreadByVisitorMessageCountChangeListener?.changedUnreadByVisitorMessageCountTo(newValue: self.unreadByVisitorMessageCount)
+        }
+    }
+    
     func changingChatStateOf(chat: ChatItem?) {
         let previousChat = self.chat
         self.chat = chat
@@ -145,7 +159,7 @@ final class MessageStreamImpl {
             lastChatState = newChatState
         }
         
-        let newOperator = operatorFactory.createOperatorFrom(operatorItem: (self.chat != nil) ? self.chat!.getOperator() : nil)
+        let newOperator = operatorFactory.createOperatorFrom(operatorItem: self.chat?.getOperator())
         if newOperator != currentOperator {
             let previousOperator = currentOperator
             currentOperator = newOperator
@@ -163,6 +177,10 @@ final class MessageStreamImpl {
         
         if let unreadByOperatorTimestamp = chat?.getUnreadByOperatorTimestamp() {
             set(unreadByOperatorTimestamp: Date(timeIntervalSince1970: unreadByOperatorTimestamp))
+        }
+        
+        if let unreadByVisitorMessageCount = chat?.getUnreadByVisitorMessageCount() {
+            set(unreadByVisitorMessageCount: unreadByVisitorMessageCount)
         }
         
         if let unreadByVisitorTimestamp = chat?.getUnreadByVisitorTimestamp() {
@@ -285,6 +303,10 @@ extension MessageStreamImpl: MessageStream {
         return unreadByOperatorTimestamp
     }
     
+    func getUnreadByVisitorMessageCount() -> Int {
+        return (unreadByVisitorMessageCount > 0) ? unreadByVisitorMessageCount : 0
+    }
+    
     func getUnreadByVisitorTimestamp() -> Date? {
         return unreadByVisitorTimestamp
     }
@@ -302,7 +324,7 @@ extension MessageStreamImpl: MessageStream {
     }
     
     func getLastRatingOfOperatorWith(id: String) -> Int {
-        let rating = ((chat != nil) ? chat!.getOperatorIDToRate()?[id] : nil)
+        let rating = chat?.getOperatorIDToRate()?[id]
         
         return ((rating == nil) ? 0 : rating!.getRating())
     }
@@ -324,6 +346,12 @@ extension MessageStreamImpl: MessageStream {
         webimActions.rateOperatorWith(id: id,
                                       rating: (rating - 3), // Accepted range: (-2, -1, 0, 1, 2).
                                       completionHandler: comletionHandler)
+    }
+    
+    func respondSentryCall(id: String) throws {
+        try accessChecker.checkAccess()
+        
+        webimActions.respondSentryCall(id: id)
     }
     
     func startChat() throws {
@@ -454,6 +482,10 @@ extension MessageStreamImpl: MessageStream {
         self.unreadByOperatorTimestampChangeListener = unreadByOperatorTimestampChangeListener
     }
     
+    func set(unreadByVisitorMessageCountChangeListener: UnreadByVisitorMessageCountChangeListener) {
+        self.unreadByVisitorMessageCountChangeListener = unreadByVisitorMessageCountChangeListener
+    }
+    
     func set(unreadByVisitorTimestampChangeListener: UnreadByVisitorTimestampChangeListener) {
         self.unreadByVisitorTimestampChangeListener = unreadByVisitorTimestampChangeListener
     }
@@ -483,8 +515,8 @@ extension MessageStreamImpl: MessageStream {
 fileprivate final class SendFileCompletionHandlerWrapper: SendFileCompletionHandler {
     
     // MARK: - Properties
-    let messageHolder: MessageHolder
-    let sendFileCompletionHandler: SendFileCompletionHandler?
+    private let messageHolder: MessageHolder
+    private weak var sendFileCompletionHandler: SendFileCompletionHandler?
     
     // MARK: - Initialization
     init(sendFileCompletionHandler: SendFileCompletionHandler?,

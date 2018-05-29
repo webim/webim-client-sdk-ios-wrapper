@@ -36,6 +36,20 @@ final class _ObjCMessageStream: NSObject {
     // MARK: - Properties
     private let messageStream: MessageStream
     
+    private var dataMessageCompletionHandlerWrapper: DataMessageCompletionHandlerWrapper?
+    private var rateOperatorCompletionHandlerWrapper: RateOperatorCompletionHandlerWrapper?
+    private var sendFileCompletionHandlerWrapper: SendFileCompletionHandlerWrapper?
+    private var chatStateListenerWrapper: ChatStateListenerWrapper?
+    private var departmentListChangeListenerWrapper: DepartmentListChangeListenerWrapper?
+    private var currentOperatorChangeListenerWrapper: CurrentOperatorChangeListenerWrapper?
+    private var locationSettingsChangeListenerWrapper: LocationSettingsChangeListenerWrapper?
+    private var operatorTypingListenerWrapper: OperatorTypingListenerWrapper?
+    private var onlineStatusChangeListenerWrapper: OnlineStatusChangeListenerWrapper?
+    private var visitSessionStateListenerWrapper: VisitSessionStateListenerWrapper?
+    private var messageListenerWrapper: MessageListenerWrapper?
+    private var unreadByOperatorTimestampChangeListenerWrapper: UnreadByOperatorTimestampChangeListenerWrapper?
+    private var unreadByVisitorTimestampChangeListenerWrapper: UnreadByVisitorTimestampChangeListenerWrapper?
+    
     
     // MARK: - Initialization
     init(messageStream: MessageStream) {
@@ -204,52 +218,72 @@ final class _ObjCMessageStream: NSObject {
     
     @objc(newMessageTrackerWithMessageListener:error:)
     func newMessageTracker(messageListener: _ObjCMessageListener) throws -> _ObjCMessageTracker {
-        return try _ObjCMessageTracker(messageTracker: messageStream.newMessageTracker(messageListener: MessageListenerWrapper(messageListener: messageListener)))
+        let wrapper = MessageListenerWrapper(messageListener: messageListener)
+        messageListenerWrapper = wrapper
+        return try _ObjCMessageTracker(messageTracker: messageStream.newMessageTracker(messageListener: wrapper))
     }
     
     @objc(setVisitSessionStateListener:)
     func set(visitSessionStateListener: _ObjCVisitSessionStateListener) {
-        messageStream.set(visitSessionStateListener: VisitSessionStateListenerWrapper(visitSessionStateListener: visitSessionStateListener))
+        let wrapper = VisitSessionStateListenerWrapper(visitSessionStateListener: visitSessionStateListener)
+        visitSessionStateListenerWrapper = wrapper
+        messageStream.set(visitSessionStateListener: wrapper)
     }
     
     @objc(setChatStateListener:)
     func set(chatStateListener: _ObjCChatStateListener) {
-        messageStream.set(chatStateListener: ChatStateListenerWrapper(chatStateListener: chatStateListener))
+        let wrapper = ChatStateListenerWrapper(chatStateListener: chatStateListener)
+        chatStateListenerWrapper = wrapper
+        messageStream.set(chatStateListener: wrapper)
     }
     
     @objc(setCurrentOperatorChangeListener:)
     func set(currentOperatorChangeListener: _ObjCCurrentOperatorChangeListener) {
-        messageStream.set(currentOperatorChangeListener: CurrentOperatorChangeListenerWrapper(currentOperatorChangeListener: currentOperatorChangeListener))
+        let wrapper = CurrentOperatorChangeListenerWrapper(currentOperatorChangeListener: currentOperatorChangeListener)
+        currentOperatorChangeListenerWrapper = wrapper
+        messageStream.set(currentOperatorChangeListener: wrapper)
     }
     
     @objc(setDepartmentListChangeListener:)
     func set(departmentListChangeListener: _ObjCDepartmentListChangeListener) {
-        messageStream.set(departmentListChangeListener: DepartmentListChangeListenerWrapper(departmentListChangeListener: departmentListChangeListener))
+        let wrapper = DepartmentListChangeListenerWrapper(departmentListChangeListener: departmentListChangeListener)
+        departmentListChangeListenerWrapper = wrapper
+        messageStream.set(departmentListChangeListener: wrapper)
     }
     
     @objc(LocationSettingsChangeListener:)
     func set(locationSettingsChangeListener: _ObjCLocationSettingsChangeListener) {
-        messageStream.set(locationSettingsChangeListener: LocationSettingsChangeListenerWrapper(locationSettingsChangeListener: locationSettingsChangeListener))
+        let wrapper = LocationSettingsChangeListenerWrapper(locationSettingsChangeListener: locationSettingsChangeListener)
+        locationSettingsChangeListenerWrapper = wrapper
+        messageStream.set(locationSettingsChangeListener: wrapper)
     }
     
     @objc(setOperatorTypingListener:)
     func set(operatorTypingListener: _ObjCOperatorTypingListener) {
-        messageStream.set(operatorTypingListener: OperatorTypingListenerWrapper(operatorTypingListener: operatorTypingListener))
+        let wrapper = OperatorTypingListenerWrapper(operatorTypingListener: operatorTypingListener)
+        operatorTypingListenerWrapper = wrapper
+        messageStream.set(operatorTypingListener: wrapper)
     }
     
     @objc(setOnlineStatusChangeListener:)
     func set(onlineStatusChangeListener: _ObjCOnlineStatusChangeListener) {
-        messageStream.set(onlineStatusChangeListener: OnlineStatusChangeListenerWrapper(onlineStatusChangeListener: onlineStatusChangeListener))
+        let wrapper = OnlineStatusChangeListenerWrapper(onlineStatusChangeListener: onlineStatusChangeListener)
+        onlineStatusChangeListenerWrapper = wrapper
+        messageStream.set(onlineStatusChangeListener: wrapper)
     }
     
     @objc(setUnreadByOperatorTimestampChangeListener:)
     func set(unreadByOperatorTimestampChangeListener: _ObjCUnreadByOperatorTimestampChangeListener) {
-        messageStream.set(unreadByOperatorTimestampChangeListener: UnreadByOperatorTimestampChangeListenerWrapper(unreadByOperatorTimestampChangeListener: unreadByOperatorTimestampChangeListener))
+        let wrapper = UnreadByOperatorTimestampChangeListenerWrapper(unreadByOperatorTimestampChangeListener: unreadByOperatorTimestampChangeListener)
+        unreadByOperatorTimestampChangeListenerWrapper = wrapper
+        messageStream.set(unreadByOperatorTimestampChangeListener: wrapper)
     }
     
     @objc(setUnreadByVisitorTimestampChangeListener:)
     func set(unreadByVisitorTimestampChangeListener: _ObjCUnreadByVisitorTimestampChangeListener) {
-        messageStream.set(unreadByVisitorTimestampChangeListener: UnreadByVisitorTimestampChangeListenerWrapper(unreadByVisitorTimestampChangeListener: unreadByVisitorTimestampChangeListener))
+        let wrapper = UnreadByVisitorTimestampChangeListenerWrapper(unreadByVisitorTimestampChangeListener: unreadByVisitorTimestampChangeListener)
+        unreadByVisitorTimestampChangeListenerWrapper = wrapper
+        messageStream.set(unreadByVisitorTimestampChangeListener: wrapper)
     }
         
 }
@@ -449,6 +483,8 @@ enum _ObjCDataMessageError: Int, Error {
 enum _ObjCSendFileError: Int, Error {
     case FILE_SIZE_EXCEEDED
     case FILE_TYPE_NOT_ALLOWED
+    case UPLOADED_FILE_NOT_FOUND
+    case UNKNOWN
 }
 
 // MARK: - RateOperatorError
@@ -465,7 +501,7 @@ enum _ObjCRateOperatorError: Int, Error {
 fileprivate final class DataMessageCompletionHandlerWrapper: DataMessageCompletionHandler {
     
     // MARK: - Properties
-    private let dataMessageCompletionHandler: _ObjCDataMessageCompletionHandler
+    private weak var dataMessageCompletionHandler: _ObjCDataMessageCompletionHandler?
     
     
     // MARK: - Initialization
@@ -478,7 +514,7 @@ fileprivate final class DataMessageCompletionHandlerWrapper: DataMessageCompleti
     // MARK: DataMessageCompletionHandler protocol methods
     
     func onSussess(messageID: String) {
-        dataMessageCompletionHandler.onSuccess(messageID: messageID)
+        dataMessageCompletionHandler?.onSuccess(messageID: messageID)
     }
     
     func onFailure(messageID: String, error: DataMessageError) {
@@ -498,7 +534,7 @@ fileprivate final class DataMessageCompletionHandlerWrapper: DataMessageCompleti
             objCError = .UNKNOWN
         }
         
-        dataMessageCompletionHandler.onFailure(messageID: messageID,
+        dataMessageCompletionHandler?.onFailure(messageID: messageID,
                                                error: objCError!)
     }
     
@@ -508,7 +544,7 @@ fileprivate final class DataMessageCompletionHandlerWrapper: DataMessageCompleti
 fileprivate final class SendFileCompletionHandlerWrapper: SendFileCompletionHandler {
     
     // MARK: - Properties
-    private let sendFileCompletionHandler: _ObjCSendFileCompletionHandler
+    private weak var sendFileCompletionHandler: _ObjCSendFileCompletionHandler?
     
     
     // MARK: - Initialization
@@ -521,7 +557,7 @@ fileprivate final class SendFileCompletionHandlerWrapper: SendFileCompletionHand
     // MARK: SendFileCompletionHandler protocol methods
     
     func onSuccess(messageID: String) {
-        sendFileCompletionHandler.onSuccess(messageID: messageID)
+        sendFileCompletionHandler?.onSuccess(messageID: messageID)
     }
     
     func onFailure(messageID: String,
@@ -532,9 +568,13 @@ fileprivate final class SendFileCompletionHandlerWrapper: SendFileCompletionHand
             objCError = .FILE_SIZE_EXCEEDED
         case .FILE_TYPE_NOT_ALLOWED:
             objCError = .FILE_TYPE_NOT_ALLOWED
+        case .UPLOADED_FILE_NOT_FOUND:
+            objCError = .UPLOADED_FILE_NOT_FOUND
+        case .UNKNOWN:
+            objCError = .UNKNOWN
         }
         
-        sendFileCompletionHandler.onFailure(messageID: messageID,
+        sendFileCompletionHandler?.onFailure(messageID: messageID,
                                             error: objCError!)
     }
     
@@ -544,7 +584,7 @@ fileprivate final class SendFileCompletionHandlerWrapper: SendFileCompletionHand
 fileprivate final class RateOperatorCompletionHandlerWrapper: RateOperatorCompletionHandler {
     
     // MARK: - Properties
-    private let rateOperatorCompletionHandler: _ObjCRateOperatorCompletionHandler
+    private weak var rateOperatorCompletionHandler: _ObjCRateOperatorCompletionHandler?
     
     
     // MARK: - Initialization
@@ -557,7 +597,7 @@ fileprivate final class RateOperatorCompletionHandlerWrapper: RateOperatorComple
     // MARK: RateOperatorCompletionHandler protocol methods
     
     func onSuccess() {
-        rateOperatorCompletionHandler.onSuccess()
+        rateOperatorCompletionHandler?.onSuccess()
     }
     
     func onFailure(error: RateOperatorError) {
@@ -569,7 +609,7 @@ fileprivate final class RateOperatorCompletionHandlerWrapper: RateOperatorComple
             objCError = .WRONG_OPERATOR_ID
         }
         
-        rateOperatorCompletionHandler.onFailure(error: objCError!)
+        rateOperatorCompletionHandler?.onFailure(error: objCError!)
     }
     
 }
@@ -578,7 +618,7 @@ fileprivate final class RateOperatorCompletionHandlerWrapper: RateOperatorComple
 fileprivate final class VisitSessionStateListenerWrapper: VisitSessionStateListener {
     
     // MARK: - Properties
-    private let visitSessionStateListener: _ObjCVisitSessionStateListener
+    private weak var visitSessionStateListener: _ObjCVisitSessionStateListener?
     
     // MARK: - Initialization
     init(visitSessionStateListener: _ObjCVisitSessionStateListener) {
@@ -621,7 +661,7 @@ fileprivate final class VisitSessionStateListenerWrapper: VisitSessionStateListe
             newObjCVisitSessionState = .UNKNOWN
         }
         
-        visitSessionStateListener.changed(state: previousObjCVisitSessionState!,
+        visitSessionStateListener?.changed(state: previousObjCVisitSessionState!,
                                           to: newObjCVisitSessionState!)
     }
     
@@ -692,7 +732,7 @@ fileprivate final class ChatStateListenerWrapper: ChatStateListener {
 fileprivate final class CurrentOperatorChangeListenerWrapper: CurrentOperatorChangeListener {
     
     // MARK: - Properties
-    private let currentOperatorChangeListener: _ObjCCurrentOperatorChangeListener
+    private weak var currentOperatorChangeListener: _ObjCCurrentOperatorChangeListener?
     
     // MARK: - Initialization
     init(currentOperatorChangeListener: _ObjCCurrentOperatorChangeListener) {
@@ -703,7 +743,7 @@ fileprivate final class CurrentOperatorChangeListenerWrapper: CurrentOperatorCha
     // MARK: - CurrentOperatorChangeListener protocol methods
     func changed(operator previousOperator: Operator,
                  to newOperator: Operator?) {
-        currentOperatorChangeListener.changed(operator: _ObjCOperator(operator: previousOperator),
+        currentOperatorChangeListener?.changed(operator: _ObjCOperator(operator: previousOperator),
                                               to: ((newOperator == nil) ? nil : _ObjCOperator(operator: newOperator!)))
     }
     
@@ -713,7 +753,7 @@ fileprivate final class CurrentOperatorChangeListenerWrapper: CurrentOperatorCha
 fileprivate final class DepartmentListChangeListenerWrapper: DepartmentListChangeListener {
     
     // MARK: - Properties
-    private let departmentListChangeListener: _ObjCDepartmentListChangeListener
+    private weak var departmentListChangeListener: _ObjCDepartmentListChangeListener?
     
     // MARK: - Initialization
     init(departmentListChangeListener: _ObjCDepartmentListChangeListener) {
@@ -729,7 +769,7 @@ fileprivate final class DepartmentListChangeListenerWrapper: DepartmentListChang
             objCDepartmentList.append(objCDepartment)
         }
         
-        departmentListChangeListener.received(departmentList: objCDepartmentList)
+        departmentListChangeListener?.received(departmentList: objCDepartmentList)
     }
     
 }
@@ -738,7 +778,7 @@ fileprivate final class DepartmentListChangeListenerWrapper: DepartmentListChang
 fileprivate final class LocationSettingsChangeListenerWrapper: LocationSettingsChangeListener {
     
     // MARK: - Properties
-    private let locationSettingsChangeListener: _ObjCLocationSettingsChangeListener
+    private weak var locationSettingsChangeListener: _ObjCLocationSettingsChangeListener?
     
     // MARK: - Initialization
     init(locationSettingsChangeListener: _ObjCLocationSettingsChangeListener) {
@@ -749,7 +789,7 @@ fileprivate final class LocationSettingsChangeListenerWrapper: LocationSettingsC
     // MARK: LocationSettingsChangeListener protocol methods
     func changed(locationSettings previousLocationSettings: LocationSettings,
                  to newLocationSettings: LocationSettings) {
-        locationSettingsChangeListener.changed(locationSettings: _ObjCLocationSettings(locationSettings: previousLocationSettings),
+        locationSettingsChangeListener?.changed(locationSettings: _ObjCLocationSettings(locationSettings: previousLocationSettings),
                                                to: _ObjCLocationSettings(locationSettings: newLocationSettings))
     }
     
@@ -759,7 +799,7 @@ fileprivate final class LocationSettingsChangeListenerWrapper: LocationSettingsC
 fileprivate final class OperatorTypingListenerWrapper: OperatorTypingListener {
     
     // MARK: - Properties
-    private let operatorTypingListener: _ObjCOperatorTypingListener
+    private weak var operatorTypingListener: _ObjCOperatorTypingListener?
     
     // MARK: - Initialization
     init(operatorTypingListener: _ObjCOperatorTypingListener) {
@@ -769,7 +809,7 @@ fileprivate final class OperatorTypingListenerWrapper: OperatorTypingListener {
     // MARK: - Methods
     // MARK: OperatorTypingListener protocol methods
     func onOperatorTypingStateChanged(isTyping: Bool) {
-        operatorTypingListener.onOperatorTypingStateChanged(isTyping: isTyping)
+        operatorTypingListener?.onOperatorTypingStateChanged(isTyping: isTyping)
     }
     
 }
@@ -778,7 +818,7 @@ fileprivate final class OperatorTypingListenerWrapper: OperatorTypingListener {
 fileprivate final class OnlineStatusChangeListenerWrapper: OnlineStatusChangeListener {
     
     // MARK: - Properties
-    private let onlineStatusChangeListener: _ObjCOnlineStatusChangeListener
+    private weak var onlineStatusChangeListener: _ObjCOnlineStatusChangeListener?
     
     // MARK: - Initialization
     init(onlineStatusChangeListener: _ObjCOnlineStatusChangeListener) {
@@ -817,7 +857,7 @@ fileprivate final class OnlineStatusChangeListenerWrapper: OnlineStatusChangeLis
             newObjCOnlineStatus = .UNKNOWN
         }
         
-        onlineStatusChangeListener.changed(onlineStatus: previousObjCOnlineStatus!,
+        onlineStatusChangeListener?.changed(onlineStatus: previousObjCOnlineStatus!,
                                            to: newObjCOnlineStatus!)
     }
     
@@ -828,7 +868,7 @@ fileprivate final class OnlineStatusChangeListenerWrapper: OnlineStatusChangeLis
 fileprivate final class UnreadByOperatorTimestampChangeListenerWrapper: UnreadByOperatorTimestampChangeListener {
     
     // MARK: - Properties
-    private let unreadByOperatorTimestampChangeListener: _ObjCUnreadByOperatorTimestampChangeListener
+    private weak var unreadByOperatorTimestampChangeListener: _ObjCUnreadByOperatorTimestampChangeListener?
     
     // MARK: - Initialization
     init(unreadByOperatorTimestampChangeListener: _ObjCUnreadByOperatorTimestampChangeListener) {
@@ -838,7 +878,7 @@ fileprivate final class UnreadByOperatorTimestampChangeListenerWrapper: UnreadBy
     // MARK: - Methods
     // MARK: UnreadByOperatorTimestampChangeListener protocol methods
     func changedUnreadByOperatorTimestampTo(newValue: Date?) {
-        unreadByOperatorTimestampChangeListener.changedUnreadByOperatorTimestampTo(newValue: newValue)
+        unreadByOperatorTimestampChangeListener?.changedUnreadByOperatorTimestampTo(newValue: newValue)
     }
     
 }
@@ -847,7 +887,7 @@ fileprivate final class UnreadByOperatorTimestampChangeListenerWrapper: UnreadBy
 fileprivate final class UnreadByVisitorTimestampChangeListenerWrapper: UnreadByVisitorTimestampChangeListener {
     
     // MARK: - Properties
-    private let unreadByVisitorTimestampChangeListener: _ObjCUnreadByVisitorTimestampChangeListener
+    private weak var unreadByVisitorTimestampChangeListener: _ObjCUnreadByVisitorTimestampChangeListener?
     
     // MARK: - Initialization
     init(unreadByVisitorTimestampChangeListener: _ObjCUnreadByVisitorTimestampChangeListener) {
@@ -857,7 +897,7 @@ fileprivate final class UnreadByVisitorTimestampChangeListenerWrapper: UnreadByV
     // MARK: - Methods
     // MARK: - UnreadByVisitorTimestampChangeListener protocol methods
     func changedUnreadByVisitorTimestampTo(newValue: Date?) {
-        unreadByVisitorTimestampChangeListener.changedUnreadByVisitorTimestampTo(newValue: newValue)
+        unreadByVisitorTimestampChangeListener?.changedUnreadByVisitorTimestampTo(newValue: newValue)
     }
     
 }

@@ -28,9 +28,9 @@ import Foundation
 
 /**
  Class that encapsulates chat update data, received from a server.
- - Author:
+ - author:
  Nikita Lazarev-Zubov
- - Copyright:
+ - copyright:
  2017 Webim
  */
 final class DeltaItem {
@@ -43,11 +43,12 @@ final class DeltaItem {
         case chatOperator = "CHAT_OPERATOR"
         case chatOperatorTyping = "CHAT_OPERATOR_TYPING"
         case chatReadByVisitor = "CHAT_READ_BY_VISITOR"
-        case statState = "CHAT_STATE"
+        case chatState = "CHAT_STATE"
         case chatUnreadByOperatorTimestamp = "CHAT_UNREAD_BY_OPERATOR_SINCE_TS"
         case departmentList = "DEPARTMENT_LIST"
         case offlineChatMessage = "OFFLINE_CHAT_MESSAGE"
         case operatorRate = "OPERATOR_RATE"
+        case unreadByVisitor = "UNREAD_BY_VISITOR"
         case visitSession = "VISIT_SESSION"
         case visitSessionState = "VISIT_SESSION_STATE"
     }
@@ -55,6 +56,10 @@ final class DeltaItem {
         case add = "add"
         case delete = "del"
         case update = "upd"
+    }
+    enum UnreadByVisitorField: String {
+        case timestamp = "sinceTs"
+        case messageCount = "msgCnt"
     }
     private enum JSONField: String {
         case data = "data"

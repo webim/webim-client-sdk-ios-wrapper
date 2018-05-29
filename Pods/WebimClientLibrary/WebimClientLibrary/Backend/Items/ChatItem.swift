@@ -28,9 +28,9 @@ import Foundation
 
 /**
  Class that encapsulates chat data.
- - Author:
+ - author:
  Nikita Lazarev-Zubov
- - Copyright:
+ - copyright:
  2017 Webim
  */
 final class ChatItem {
@@ -54,6 +54,7 @@ final class ChatItem {
         case subcategory = "subcategory"
         case subject = "subject"
         case unreadByOperatorTimestamp = "unreadByOperatorSinceTs"
+        case unreadByVisitorMessageCount = "unreadByVisitorMsgCnt"
         case unreadByVisitorTimestamp = "unreadByVisitorSinceTs"
         case visitorTyping = "visitorTyping"
     }
@@ -74,6 +75,7 @@ final class ChatItem {
     private var subcategory: String?
     private var subject: String?
     private var unreadByOperatorTimestamp: Double?
+    private var unreadByVisitorMessageCount: Int
     private var unreadByVisitorTimestamp: Double?
     private var visitorTyping: Bool?
     
@@ -90,6 +92,12 @@ final class ChatItem {
             id = idValue
         } else {
             id = String(Int(-creationTimestamp))
+        }
+        
+        if let unreadByVisitorMessageCount = jsonDictionary[JSONField.unreadByVisitorMessageCount.rawValue] as? Int {
+            self.unreadByVisitorMessageCount = unreadByVisitorMessageCount
+        } else {
+            self.unreadByVisitorMessageCount = 0
         }
         
         if let messagesValue = jsonDictionary[JSONField.messages.rawValue] as? [Any] {
@@ -166,12 +174,14 @@ final class ChatItem {
     // For testing purpoeses.
     init(id: String? = nil) {
         creationTimestamp = ChatItem.createCreationTimestamp()
-        
+
         if id == nil {
             self.id = String(Int(-creationTimestamp))
         } else {
-            self.id = id!
+            self.id = id! 
         }
+        
+        unreadByVisitorMessageCount = 0
     }
     
     // MARK: - Methods
@@ -235,6 +245,14 @@ final class ChatItem {
         operatorIDToRate[operatorID] = rating
     }
     
+    func getUnreadByVisitorMessageCount() -> Int {
+        return unreadByVisitorMessageCount
+    }
+    
+    func set(unreadByVisitorMessageCount: Int) {
+        self.unreadByVisitorMessageCount = unreadByVisitorMessageCount
+    }
+    
     func getUnreadByVisitorTimestamp() -> Double? {
         return unreadByVisitorTimestamp
     }
@@ -265,12 +283,8 @@ final class ChatItem {
         case unknown = "unknown"
         
         // MARK: - Initialization
-        init?(withType typeValue: String) {
-            guard let chatItemState = ChatItemState(rawValue: typeValue) else {
-                return nil
-            }
-            
-            self = chatItemState
+        init(withType typeValue: String) {
+            self = ChatItemState(rawValue: typeValue) ?? .unknown
         }
         
         

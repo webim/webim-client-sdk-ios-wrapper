@@ -27,9 +27,9 @@
 import Foundation
 
 /**
- - Author:
+ - author:
  Nikita Lazarev-Zubov
- - Copyright:
+ - copyright:
  2017 Webim
  */
 final class SessionDestroyer {
@@ -41,7 +41,7 @@ final class SessionDestroyer {
     // MARK: - Methods
     
     func add(action: @escaping () -> ()) {
-        self.actions.append(action)
+        actions.append(action)
     }
     
     func destroy() {
