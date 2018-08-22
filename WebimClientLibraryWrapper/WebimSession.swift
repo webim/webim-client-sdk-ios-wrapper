@@ -60,6 +60,11 @@ final class _ObjCWebimSession: NSObject {
         try webimSession.destroy()
     }
     
+    @objc(destroyWithClearVisitorData:)
+    func destroyWithClearVisitorData() throws {
+        try webimSession.destroyWithClearVisitorData()
+    }
+    
     @objc(getStream)
     func getStream() -> _ObjCMessageStream {
         return _ObjCMessageStream(messageStream: webimSession.getStream())

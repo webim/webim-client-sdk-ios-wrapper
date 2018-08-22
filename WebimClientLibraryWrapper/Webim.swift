@@ -70,6 +70,7 @@ final class _ObjCSessionBuilder: NSObject {
     
     // MARK: - Properties
     private (set) var sessionBuilder: SessionBuilder
+    private var webimLoggerWrapper: WebimLoggerWrapper?
     
     
     // MARK: - Initialization
@@ -90,6 +91,13 @@ final class _ObjCSessionBuilder: NSObject {
     @objc(setLocation:)
     func set(location: String) -> _ObjCSessionBuilder {
         sessionBuilder = sessionBuilder.set(location: location)
+        
+        return self
+    }
+    
+    @objc(setPrechat:)
+    func set(prechat: String) -> _ObjCSessionBuilder {
+        sessionBuilder = sessionBuilder.set(prechat: prechat)
         
         return self
     }
@@ -189,7 +197,9 @@ final class _ObjCSessionBuilder: NSObject {
         case .ERROR:
             internalVerbosityLevel = .ERROR
         }
-        sessionBuilder = sessionBuilder.set(webimLogger: WebimLoggerWrapper(webimLogger: webimLogger),
+        let wrapper = WebimLoggerWrapper(webimLogger: webimLogger)
+        webimLoggerWrapper = wrapper
+        sessionBuilder = sessionBuilder.set(webimLogger: wrapper,
                                             verbosityLevel: internalVerbosityLevel!)
         
         return self

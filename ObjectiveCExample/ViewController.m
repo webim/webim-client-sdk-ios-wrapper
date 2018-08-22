@@ -48,9 +48,13 @@ static NSString *LOCATION = @"mobile";
     
     NSError *error = nil;
     
+    
+    
     SessionBuilder *sessionBuilder = [Webim newSessionBuilder];
     sessionBuilder = [sessionBuilder setAccountName:ACCOUNT_NAME];
     sessionBuilder = [sessionBuilder setLocation:LOCATION];
+    sessionBuilder = [sessionBuilder setIsVisitorDataClearingEnabled:true];
+    sessionBuilder = [sessionBuilder setWebimLogger:self verbosityLevel:WebimLoggerVerbosityLevelVERBOSE];
     WebimSession *webimSession = [sessionBuilder build:&error];
     
     /* This syntax is closer to README.MD examples:
@@ -99,6 +103,10 @@ static NSString *LOCATION = @"mobile";
 
 - (void)removedMessage:(Message * _Nonnull)message {
     // Handle removing.
+}
+
+- (void) logEntry:(NSString *)entry {
+    NSLog(@"%@", entry);
 }
 
 @end

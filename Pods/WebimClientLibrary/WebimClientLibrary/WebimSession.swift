@@ -32,7 +32,7 @@ import Foundation
  - copyright:
  2017 Webim
  */
-public protocol WebimSession {
+public protocol WebimSession: class {
     
     /**
      Resumes session networking.
@@ -71,6 +71,18 @@ public protocol WebimSession {
      2017 Webim
      */
     func destroy() throws
+    
+    /**
+     Destroys session, performing a cleanup.. After that any session methods are not available.
+     - throws:
+     `AccessError.INVALID_THREAD` if the method was called not from the thread the WebimSession was created in.
+     `AccessError.INVALID_SESSION` if WebimSession was destroyed.
+     - author:
+     Nikita Kaberov
+     - copyright:
+     2018 Webim
+     */
+    func destroyWithClearVisitorData() throws
     
     /**
      - returns:

@@ -49,6 +49,7 @@ final class _ObjCMessageStream: NSObject {
     private var messageListenerWrapper: MessageListenerWrapper?
     private var unreadByOperatorTimestampChangeListenerWrapper: UnreadByOperatorTimestampChangeListenerWrapper?
     private var unreadByVisitorTimestampChangeListenerWrapper: UnreadByVisitorTimestampChangeListenerWrapper?
+    private var unreadByVisitorMessageCountChangeListenerWrapper: UnreadByVisitorMessageCountChangeListenerWrapper?
     
     
     // MARK: - Initialization
@@ -152,6 +153,12 @@ final class _ObjCMessageStream: NSObject {
                                            comletionHandler: RateOperatorCompletionHandlerWrapper(rateOperatorCompletionHandler: completionHandler))
     }
     
+    @objc(respondSentryCall:error:)
+    func respondSentryCall(id: String) throws {
+        try respondSentryCall(id: id)
+        
+    }
+    
     @objc(startChat:)
     func startChat() throws {
         try messageStream.startChat()
@@ -161,6 +168,12 @@ final class _ObjCMessageStream: NSObject {
     func startChat(departmentKey: String?) throws {
         try messageStream.startChat(departmentKey: departmentKey)
     }
+    
+    @objc(startChatWithCustomFields:error:)
+    func startChat(customFields: String?) throws {
+        try messageStream.startChat(customFields: customFields)
+    }
+    
     
     @objc(startChatWithFirstQuestion:error:)
     func startChat(firstQuestion: String?) throws {
@@ -172,6 +185,29 @@ final class _ObjCMessageStream: NSObject {
                    firstQuestion: String?) throws {
         try messageStream.startChat(departmentKey: departmentKey,
                                     firstQuestion: firstQuestion)
+    }
+    
+    @objc(startChatWithFirstQuestion:customFields:error:)
+    func startChat(firstQuestion: String?,
+                   customFields: String?) throws {
+        try messageStream.startChat(firstQuestion: firstQuestion,
+                                    customFields: customFields)
+    }
+    
+    @objc(startChatWithDepartmentKey:customFields:error:)
+    func startChat(departmentKey: String?,
+                   customFields: String?) throws {
+        try messageStream.startChat(departmentKey: departmentKey,
+                                    customFields: customFields)
+    }
+    
+    @objc(startChatWithDepartmentKey:firstQuestion:customFields:error:)
+    func startChat(departmentKey: String?,
+                   firstQuestion: String?,
+                   customFields: String?) throws {
+        try messageStream.startChat(departmentKey: departmentKey,
+                                    firstQuestion: firstQuestion,
+                                    customFields: customFields)
     }
     
     @objc(closeChat:)
@@ -284,6 +320,13 @@ final class _ObjCMessageStream: NSObject {
         let wrapper = UnreadByVisitorTimestampChangeListenerWrapper(unreadByVisitorTimestampChangeListener: unreadByVisitorTimestampChangeListener)
         unreadByVisitorTimestampChangeListenerWrapper = wrapper
         messageStream.set(unreadByVisitorTimestampChangeListener: wrapper)
+    }
+    
+    @objc(setUnreadByVisitorMessageCountChangeListener:)
+    func set(unreadByVisitorMessageCountChangeListener: _ObjCUnreadByVisitorMessageCountChangeListener) {
+        let wrapper = UnreadByVisitorMessageCountChangeListenerWrapper(unreadByVisitorMessageCountChangeListener: unreadByVisitorMessageCountChangeListener)
+        unreadByVisitorMessageCountChangeListenerWrapper = wrapper
+        messageStream.set(unreadByVisitorMessageCountChangeListener: wrapper)
     }
         
 }
@@ -430,6 +473,15 @@ protocol _ObjCUnreadByVisitorTimestampChangeListener {
     
     @objc(changedUnreadByVisitorTimestampTo:)
     func changedUnreadByVisitorTimestampTo(newValue: Date?)
+    
+}
+
+// MARK: - UnreadByVisitorMessageCountChangeListener
+@objc(UnreadByVisitorMessageCountChangeListener)
+protocol _ObjCUnreadByVisitorMessageCountChangeListener {
+    
+    @objc(changedUnreadByVisitorMessageCountTo:)
+    func changedUnreadByVisitorMessageCountTo(newValue: Int)
     
 }
 
@@ -898,6 +950,25 @@ fileprivate final class UnreadByVisitorTimestampChangeListenerWrapper: UnreadByV
     // MARK: - UnreadByVisitorTimestampChangeListener protocol methods
     func changedUnreadByVisitorTimestampTo(newValue: Date?) {
         unreadByVisitorTimestampChangeListener?.changedUnreadByVisitorTimestampTo(newValue: newValue)
+    }
+    
+}
+
+// MARK: - UnreadByVisitorMessageCountChangeListener
+fileprivate final class UnreadByVisitorMessageCountChangeListenerWrapper: UnreadByVisitorMessageCountChangeListener {
+    
+    // MARK: - Properties
+    private weak var unreadByVisitorMessageCountChangeListener: _ObjCUnreadByVisitorMessageCountChangeListener?
+    
+    // MARK: - Initialization
+    init(unreadByVisitorMessageCountChangeListener: _ObjCUnreadByVisitorMessageCountChangeListener) {
+        self.unreadByVisitorMessageCountChangeListener = unreadByVisitorMessageCountChangeListener
+    }
+    
+    // MARK: - Methods
+    // MARK: - UnreadByVisitorMessageCountChangeListener protocol methods
+    func changedUnreadByVisitorMessageCountTo(newValue: Int) {
+        unreadByVisitorMessageCountChangeListener?.changedUnreadByVisitorMessageCountTo(newValue: newValue)
     }
     
 }

@@ -31,7 +31,7 @@
 
 
 // MARK: -
-@interface ViewController : UIViewController <MessageListener>
+@interface ViewController : UIViewController <MessageListener, WebimLogger>
 
 @end
 
