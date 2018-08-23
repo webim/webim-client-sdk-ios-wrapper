@@ -252,6 +252,11 @@ final class _ObjCMessageStream: NSObject {
                                       completionHandler: ((completionHandler == nil) ? nil : SendFileCompletionHandlerWrapper(sendFileCompletionHandler: completionHandler!)))
     }
     
+    @objc(setChatRead:)
+    func setChatRead() throws {
+        try messageStream.setChatRead()
+    }
+    
     @objc(newMessageTrackerWithMessageListener:error:)
     func newMessageTracker(messageListener: _ObjCMessageListener) throws -> _ObjCMessageTracker {
         let wrapper = MessageListenerWrapper(messageListener: messageListener)
