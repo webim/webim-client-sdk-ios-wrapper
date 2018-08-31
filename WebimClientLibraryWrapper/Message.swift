@@ -136,6 +136,11 @@ final class _ObjCMessage: NSObject {
         return self.message.isEqual(to: message.message)
     }
     
+    @objc(isReadByOperator)
+    func isReadByOperator() -> Bool {
+        return message.isReadByOperator()
+    }
+    
 }
 
 // MARK: - MessageAttachment

@@ -53,7 +53,6 @@ static NSString *LOCATION = @"mobile";
     SessionBuilder *sessionBuilder = [Webim newSessionBuilder];
     sessionBuilder = [sessionBuilder setAccountName:ACCOUNT_NAME];
     sessionBuilder = [sessionBuilder setLocation:LOCATION];
-    sessionBuilder = [sessionBuilder setIsVisitorDataClearingEnabled:true];
     sessionBuilder = [sessionBuilder setWebimLogger:self verbosityLevel:WebimLoggerVerbosityLevelVERBOSE];
     WebimSession *webimSession = [sessionBuilder build:&error];
     
