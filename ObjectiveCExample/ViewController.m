@@ -47,13 +47,12 @@ static NSString *LOCATION = @"mobile";
     [super viewDidLoad];
     
     NSError *error = nil;
-    
-    
-    
+
     SessionBuilder *sessionBuilder = [Webim newSessionBuilder];
     sessionBuilder = [sessionBuilder setAccountName:ACCOUNT_NAME];
     sessionBuilder = [sessionBuilder setLocation:LOCATION];
     sessionBuilder = [sessionBuilder setWebimLogger:self verbosityLevel:WebimLoggerVerbosityLevelVERBOSE];
+    sessionBuilder = [sessionBuilder setFatalErrorHandler:self];
     WebimSession *webimSession = [sessionBuilder build:&error];
     
     /* This syntax is closer to README.MD examples:
@@ -106,6 +105,10 @@ static NSString *LOCATION = @"mobile";
 
 - (void) logEntry:(NSString *)entry {
     NSLog(@"%@", entry);
+}
+
+- (void)onError:(WebimError * _Nonnull)error {
+    NSLog(@"%@", @"Here error!");
 }
 
 @end
