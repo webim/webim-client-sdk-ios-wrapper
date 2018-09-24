@@ -420,7 +420,7 @@ protocol _ObjCChatStateListener {
 protocol _ObjCCurrentOperatorChangeListener {
     
     @objc(changedOperator:to:)
-    func changed(operator previousOperator: _ObjCOperator,
+    func changed(operator previousOperator: _ObjCOperator?,
                  to newOperator: _ObjCOperator?)
     
 }
@@ -798,9 +798,9 @@ fileprivate final class CurrentOperatorChangeListenerWrapper: CurrentOperatorCha
     
     // MARK: - Methods
     // MARK: - CurrentOperatorChangeListener protocol methods
-    func changed(operator previousOperator: Operator,
+    func changed(operator previousOperator: Operator?,
                  to newOperator: Operator?) {
-        currentOperatorChangeListener?.changed(operator: _ObjCOperator(operator: previousOperator),
+        currentOperatorChangeListener?.changed(operator: ((previousOperator == nil) ? nil : _ObjCOperator(operator: previousOperator!)),
                                               to: ((newOperator == nil) ? nil : _ObjCOperator(operator: newOperator!)))
     }
     
