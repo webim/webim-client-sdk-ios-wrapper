@@ -49,6 +49,15 @@ final class _ObjCWebim: NSObject {
         }
     }
     
+    @objc(parseRemoteNotification:visitorId:)
+    static func parse(remoteNotification: [AnyHashable: Any], visitorId: String) -> _ObjCWebimRemoteNotification? {
+        if let webimRemoteNotification = Webim.parse(remoteNotification: remoteNotification, visitorId: visitorId) {
+            return _ObjCWebimRemoteNotification(webimRemoteNotification: webimRemoteNotification)
+        } else {
+            return nil
+        }
+    }
+    
     @objc(isWebimRemoteNotification:)
     static func isWebim(remoteNotification: [AnyHashable: Any]) -> NSNumber {
         return Webim.isWebim(remoteNotification: remoteNotification) as NSNumber

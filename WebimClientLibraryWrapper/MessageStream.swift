@@ -220,6 +220,11 @@ final class _ObjCMessageStream: NSObject {
         try messageStream.setVisitorTyping(draftMessage: draftMessage)
     }
     
+    @objc(setPrechatFields:error:)
+    func set(prechatFields: String) throws {
+        try messageStream.set(prechatFields: prechatFields)
+    }
+    
     @objc(sendMessage:error:)
     func send(message: String) throws -> String {
         return try messageStream.send(message: message)
