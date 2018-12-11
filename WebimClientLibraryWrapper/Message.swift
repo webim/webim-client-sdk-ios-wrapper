@@ -141,6 +141,11 @@ final class _ObjCMessage: NSObject {
         return message.isReadByOperator()
     }
     
+    @objc(canBeEdited)
+    func canBeEdited() -> Bool {
+        return message.canBeEdited()
+    }
+    
 }
 
 // MARK: - MessageAttachment

@@ -257,6 +257,32 @@ final class _ObjCMessageStream: NSObject {
                                       completionHandler: ((completionHandler == nil) ? nil : SendFileCompletionHandlerWrapper(sendFileCompletionHandler: completionHandler!)))
     }
     
+    @objc(editMessage:text:completionHandler:error:)
+    func edit(message: _ObjCMessage,
+              text: String,
+              completionHandler: _ObjCEditMessageCompletionHandler?) throws -> NSNumber {
+        let canBeEdited = try messageStream.edit(message: message.message,
+                                                 text: text,
+                                                 completionHandler: ((completionHandler == nil) ? nil : EditMessageCompletionHandlerWrapper(editMessageCompletionHandler: completionHandler!)))
+        if canBeEdited {
+            return 1
+        } else {
+            return 0
+        }
+    }
+    
+    @objc(deleteMessage:completionHandler:error:)
+    func delete(message: _ObjCMessage,
+                completionHandler: _ObjCDeleteMessageCompletionHandler?) throws -> NSNumber {
+        let canBeEdited = try messageStream.delete(message: message.message,
+                                               completionHandler: ((completionHandler == nil) ? nil : DeleteMessageCompletionHandlerWrapper(deleteMessageCompletionHandler: completionHandler!)))
+        if canBeEdited {
+            return 1
+        } else {
+            return 0
+        }
+    }
+    
     @objc(setChatRead:)
     func setChatRead() throws {
         try messageStream.setChatRead()
@@ -372,6 +398,32 @@ protocol _ObjCDataMessageCompletionHandler {
     @objc(onFailureWithMessageID:error:)
     func onFailure(messageID: String,
                    error: _ObjCDataMessageError)
+    
+}
+
+// MARK: - EditMessageCompletionHandler
+@objc(EditMessageCompletionHandler)
+protocol _ObjCEditMessageCompletionHandler {
+    
+    @objc(onSuccessWithMessageID:)
+    func onSuccess(messageID: String)
+    
+    @objc(onFailureWithMessageID:error:)
+    func onFailure(messageID: String,
+                   error: _ObjCEditMessageError)
+    
+}
+
+// MARK: - DeleteMessageCompletionHandler
+@objc(DeleteMessageCompletionHandler)
+protocol _ObjCDeleteMessageCompletionHandler {
+    
+    @objc(onSuccessWithMessageID:)
+    func onSuccess(messageID: String)
+    
+    @objc(onFailureWithMessageID:error:)
+    func onFailure(messageID: String,
+                   error: _ObjCDeleteMessageError)
     
 }
 
@@ -540,6 +592,26 @@ enum _ObjCDataMessageError: Int, Error {
     case UNKNOWN
 }
 
+// MARK: - EditMessageError
+@objc(EditMessageError)
+enum _ObjCEditMessageError: Int, Error {
+    case UNKNOWN
+    case NOT_ALLOWED
+    case MESSAGE_EMPTY
+    case MESSAGE_NOT_OWNED
+    case MAX_LENGTH_EXCEEDED
+    case WRONG_MESSAGE_KIND
+}
+
+// MARK: - DeleteMessageError
+@objc(DeleteMessageError)
+enum _ObjCDeleteMessageError: Int, Error {
+    case UNKNOWN
+    case NOT_ALLOWED
+    case MESSAGE_NOT_OWNED
+    case MESSAGE_NOT_FOUND
+}
+
 // MARK: - SendFileError
 @objc(SendFileError)
 enum _ObjCSendFileError: Int, Error {
@@ -575,7 +647,7 @@ fileprivate final class DataMessageCompletionHandlerWrapper: DataMessageCompleti
     // MARK: - Methods
     // MARK: DataMessageCompletionHandler protocol methods
     
-    func onSussess(messageID: String) {
+    func onSuccess(messageID: String) {
         dataMessageCompletionHandler?.onSuccess(messageID: messageID)
     }
     
@@ -598,6 +670,88 @@ fileprivate final class DataMessageCompletionHandlerWrapper: DataMessageCompleti
         
         dataMessageCompletionHandler?.onFailure(messageID: messageID,
                                                error: objCError!)
+    }
+    
+}
+
+// MARK: - EditMessageCompletionHandler
+fileprivate final class EditMessageCompletionHandlerWrapper: EditMessageCompletionHandler {
+    
+    // MARK: - Properties
+    private weak var editMessageCompletionHandler: _ObjCEditMessageCompletionHandler?
+    
+    
+    // MARK: - Initialization
+    init(editMessageCompletionHandler: _ObjCEditMessageCompletionHandler) {
+        self.editMessageCompletionHandler = editMessageCompletionHandler
+    }
+    
+    
+    // MARK: - Methods
+    // MARK: EditMessageCompletionHandler protocol methods
+    
+    func onSuccess(messageID: String) {
+        editMessageCompletionHandler?.onSuccess(messageID: messageID)
+    }
+    
+    func onFailure(messageID: String, error: EditMessageError) {
+        var objCError: _ObjCEditMessageError?
+        switch error {
+        case .NOT_ALLOWED:
+            objCError = .NOT_ALLOWED
+        case .MESSAGE_EMPTY:
+            objCError = .MESSAGE_EMPTY
+        case .MESSAGE_NOT_OWNED:
+            objCError = .MESSAGE_NOT_OWNED
+        case .MAX_LENGTH_EXCEEDED:
+            objCError = .MAX_LENGTH_EXCEEDED
+        case .WRONG_MESSAGE_KIND:
+            objCError = .WRONG_MESSAGE_KIND
+        case .UNKNOWN:
+            objCError = .UNKNOWN
+        }
+        
+        editMessageCompletionHandler?.onFailure(messageID: messageID,
+                                                error: objCError!)
+    }
+    
+}
+
+// MARK: - DeleteMessageCompletionHandler
+fileprivate final class DeleteMessageCompletionHandlerWrapper: DeleteMessageCompletionHandler {
+    
+    // MARK: - Properties
+    private weak var deleteMessageCompletionHandler: _ObjCDeleteMessageCompletionHandler?
+    
+    
+    // MARK: - Initialization
+    init(deleteMessageCompletionHandler: _ObjCDeleteMessageCompletionHandler) {
+        self.deleteMessageCompletionHandler = deleteMessageCompletionHandler
+    }
+    
+    
+    // MARK: - Methods
+    // MARK: DeleteMessageCompletionHandler protocol methods
+    
+    func onSuccess(messageID: String) {
+        deleteMessageCompletionHandler?.onSuccess(messageID: messageID)
+    }
+    
+    func onFailure(messageID: String, error: DeleteMessageError) {
+        var objCError: _ObjCDeleteMessageError?
+        switch error {
+        case .UNKNOWN:
+            objCError = .UNKNOWN
+        case .NOT_ALLOWED:
+            objCError = .NOT_ALLOWED
+        case .MESSAGE_NOT_OWNED:
+            objCError = .MESSAGE_NOT_OWNED
+        case .MESSAGE_NOT_FOUND:
+            objCError = .MESSAGE_NOT_FOUND
+        }
+        
+        deleteMessageCompletionHandler?.onFailure(messageID: messageID,
+                                                  error: objCError!)
     }
     
 }
