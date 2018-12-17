@@ -826,40 +826,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		19EE558516942F0BA70AB8D5BD738FC3 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 20710A88DB8A5ED1EADBD0314CDE5D6F /* WebimClientLibrary.xcconfig */;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_PREFIX_HEADER = "Target Support Files/WebimClientLibrary/WebimClientLibrary-prefix.pch";
-				INFOPLIST_FILE = "Target Support Files/WebimClientLibrary/Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MODULEMAP_FILE = "Target Support Files/WebimClientLibrary/WebimClientLibrary.modulemap";
-				PRODUCT_MODULE_NAME = WebimClientLibrary;
-				PRODUCT_NAME = WebimClientLibrary;
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
 		29F82D8F8D4AF58EA6EBAAF2C9DC96CB /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4BF2EDEC896F273E8E6EC4BA20640A07 /* SQLite.swift.xcconfig */;
@@ -887,6 +853,40 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		35FF02DEB0A0EE06178BD31C99704745 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 20710A88DB8A5ED1EADBD0314CDE5D6F /* WebimClientLibrary.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/WebimClientLibrary/WebimClientLibrary-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/WebimClientLibrary/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/WebimClientLibrary/WebimClientLibrary.modulemap";
+				PRODUCT_MODULE_NAME = WebimClientLibrary;
+				PRODUCT_NAME = WebimClientLibrary;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1088,6 +1088,38 @@
 			};
 			name = Debug;
 		};
+		F0407D57275200741DEBFD38D7FDF568 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 20710A88DB8A5ED1EADBD0314CDE5D6F /* WebimClientLibrary.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/WebimClientLibrary/WebimClientLibrary-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/WebimClientLibrary/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/WebimClientLibrary/WebimClientLibrary.modulemap";
+				PRODUCT_MODULE_NAME = WebimClientLibrary;
+				PRODUCT_NAME = WebimClientLibrary;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
 		F3697B7DB4AD4A190C708E4E087D4FBF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4BF2EDEC896F273E8E6EC4BA20640A07 /* SQLite.swift.xcconfig */;
@@ -1109,38 +1141,6 @@
 				MODULEMAP_FILE = "Target Support Files/SQLite.swift/SQLite.swift.modulemap";
 				PRODUCT_MODULE_NAME = SQLite;
 				PRODUCT_NAME = SQLite;
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Debug;
-		};
-		FAB1AAE5E89C7475ACD969A413676CDF /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 20710A88DB8A5ED1EADBD0314CDE5D6F /* WebimClientLibrary.xcconfig */;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_PREFIX_HEADER = "Target Support Files/WebimClientLibrary/WebimClientLibrary-prefix.pch";
-				INFOPLIST_FILE = "Target Support Files/WebimClientLibrary/Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MODULEMAP_FILE = "Target Support Files/WebimClientLibrary/WebimClientLibrary.modulemap";
-				PRODUCT_MODULE_NAME = WebimClientLibrary;
-				PRODUCT_NAME = WebimClientLibrary;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
@@ -1185,8 +1185,8 @@
 		B7F61C904E0AD45EA2EF16C2E383D8DE /* Build configuration list for PBXNativeTarget "WebimClientLibrary" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				FAB1AAE5E89C7475ACD969A413676CDF /* Debug */,
-				19EE558516942F0BA70AB8D5BD738FC3 /* Release */,
+				F0407D57275200741DEBFD38D7FDF568 /* Debug */,
+				35FF02DEB0A0EE06178BD31C99704745 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
