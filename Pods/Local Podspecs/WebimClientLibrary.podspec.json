@@ -1,6 +1,6 @@
 {
   "name": "WebimClientLibrary",
-  "version": "3.23.3",
+  "version": "3.23.7",
   "authors": {
     "Webim.ru Ltd.": "n.lazarev-zubov@webim.ru"
   },
@@ -16,7 +16,7 @@
   "swift_version": "4.2",
   "source": {
     "git": "https://github.com/webim/webim-client-sdk-ios.git",
-    "tag": "3.23.3"
+    "tag": "3.23.7"
   },
   "dependencies": {
     "SQLite.swift": [
