@@ -150,7 +150,7 @@ final class _ObjCMessageStream: NSObject {
                           completionHandler: _ObjCRateOperatorCompletionHandler) throws {
         try messageStream.rateOperatorWith(id: id,
                                            byRating: rating,
-                                           comletionHandler: RateOperatorCompletionHandlerWrapper(rateOperatorCompletionHandler: completionHandler))
+                                           completionHandler: RateOperatorCompletionHandlerWrapper(rateOperatorCompletionHandler: completionHandler))
     }
     
     @objc(respondSentryCall:error:)

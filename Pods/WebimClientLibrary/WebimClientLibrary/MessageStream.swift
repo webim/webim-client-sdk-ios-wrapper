@@ -158,7 +158,7 @@ public protocol MessageStream: class {
      */
     func rateOperatorWith(id: String?,
                           byRating rating: Int,
-                          comletionHandler: RateOperatorCompletionHandler?) throws
+                          completionHandler: RateOperatorCompletionHandler?) throws
     
     /**
      Respond sentry call
@@ -452,6 +452,40 @@ public protocol MessageStream: class {
               filename: String,
               mimeType: String,
               completionHandler: SendFileCompletionHandler?) throws -> String
+    
+    /**
+     Send keyboard request with button.
+     - parameter button:
+     Selected button.
+     - parameter message:
+     Message with keyboard.
+     - parameter completionHandler:
+     Completion handler that executes when operation is done.
+     - throws:
+     `AccessError.INVALID_THREAD` if the method was called not from the thread the WebimSession was created in.
+     `AccessError.INVALID_SESSION` if WebimSession was destroyed.
+     - author:
+     Nikita Kaberov
+     - copyright:
+     2019 Webim
+     */
+    func sendKeyboardRequest(button: KeyboardButton,
+                             message:Message,
+                             completionHandler: SendKeyboardRequestCompletionHandler?) throws
+    
+    /**
+     Update widget status. The change is displayed by the operator.
+     - parameter data:
+     JSON string with new widget status.
+     - throws:
+     `AccessError.INVALID_THREAD` if the method was called not from the thread the WebimSession was created in.
+     `AccessError.INVALID_SESSION` if WebimSession was destroyed.
+     - author:
+     Nikita Kaberov
+     - copyright:
+     2019 Webim
+     */
+    func updateWidgetStatus(data: String) throws
     
     /**
      Edits a text message.
@@ -828,7 +862,46 @@ public protocol SendFileCompletionHandler: class {
 
 /**
  - seealso:
- `MessageStream.rateOperatorWith(id:byRating:comletionHandler:)`.
+ `MessageStream.sendKeyboardRequest(button:message:completionHandler:)`
+ - author:
+ Nikita Kaberov
+ - copyright:
+ 2019 Webim
+ */
+public protocol SendKeyboardRequestCompletionHandler: class {
+    
+    /**
+     Executed when operation is done successfully.
+     - parameter messageID:
+     ID of the message.
+     - author:
+     Nikita Kaberov
+     - copyright:
+     2019 Webim
+     */
+    func onSuccess(messageID: String)
+    
+    /**
+     Executed when operation is failed.
+     - parameter messageID:
+     ID of the message.
+     - parameter error:
+     Error.
+     - seealso:
+     `KeyboardResponseError`.
+     - author:
+     Nikita Kaberov
+     - copyright:
+     2019 Webim
+     */
+    func onFailure(messageID: String,
+                   error: KeyboardResponseError)
+    
+}
+
+/**
+ - seealso:
+ `MessageStream.rateOperatorWith(id:byRating:completionHandler:)`.
  - author:
  Nikita Lazarev-Zubov
  - copyright:
@@ -1585,6 +1658,63 @@ public enum SendFileError: Error {
      2018 Webim
      */
     case UNKNOWN
+    
+}
+
+/**
+ - seealso:
+ `KeyboardResponseCompletionHandler.onFailure(error:)`.
+ - author:
+ Nikita Kaberov
+ - copyright:
+ 2019 Webim
+ */
+public enum KeyboardResponseError: Error {
+    
+    /**
+     Received error is not supported by current WebimClientLibrary version.
+     - author:
+     Nikita Kaberov
+     - copyright:
+     2019 Webim
+     */
+    case UNKNOWN
+    
+    /**
+     Arised when trying to response if no chat is exists.
+     - author:
+     Nikita Kaberov
+     - copyright:
+     2019 Webim
+     */
+    case NO_CHAT
+    
+    /**
+     Arised when trying to response without button id.
+     - author:
+     Nikita Kaberov
+     - copyright:
+     2019 Webim
+     */
+    case BUTTON_ID_NOT_SET
+    
+    /**
+     Arised when trying to response without request message id.
+     - author:
+     Nikita Kaberov
+     - copyright:
+     2019 Webim
+     */
+    case REQUEST_MESSAGE_ID_NOT_SET
+    
+    /**
+     Arised when trying to response with wrong data.
+     - author:
+     Nikita Kaberov
+     - copyright:
+     2019 Webim
+     */
+    case CAN_NOT_CREATE_RESPONSE
     
 }
 

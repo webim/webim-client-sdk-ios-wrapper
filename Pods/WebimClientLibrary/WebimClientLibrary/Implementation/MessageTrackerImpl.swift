@@ -72,10 +72,6 @@ final class MessageTrackerImpl {
         
         if (headMessage == nil)
             || allMessageSourcesEnded {
-            var currentChatMessages = messageHolder.getCurrentChatMessages()
-            currentChatMessages.append(message)
-            messageHolder.set(currentChatMessages: currentChatMessages)
-            
             // FIXME: Do it on endOfBatch only.
             if let completionHandler = cachedCompletionHandler {
                 getNextUncheckedMessagesBy(limit: (cachedLimit ?? 0),
@@ -177,7 +173,7 @@ final class MessageTrackerImpl {
             return
         }
         
-        let headIndex = currentChatMessages.index(of: headMessage) ?? -1
+        let headIndex = currentChatMessages.firstIndex(of: headMessage) ?? -1
         
         if headMessage.getSource().isHistoryMessage()
             || (index > headIndex) {

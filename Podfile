@@ -4,6 +4,6 @@ use_frameworks!
 
 target 'ObjectiveCExample' do
 
-    pod 'WebimClientLibrary', :git => 'https://github.com/webim/webim-client-sdk-ios.git', :tag => '3.23.7'
+    pod 'WebimClientLibrary', :git => 'https://github.com/webim/webim-client-sdk-ios.git', :tag => '3.25.1'
 
 end

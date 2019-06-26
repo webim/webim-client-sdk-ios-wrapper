@@ -74,7 +74,7 @@ final class SQLiteHistoryStorage: HistoryStorage {
     
     
     // MARK: - Properties
-    private static let queryQueue = DispatchQueue.global(qos: .background)
+    private static let queryQueue = DispatchQueue(label: "SQLiteHistoryStorageQueryQueue", qos: .background)
     private let completionHandlerQueue: DispatchQueue
     private let serverURLString: String
     private let webimClient: WebimClient
@@ -124,7 +124,7 @@ final class SQLiteHistoryStorage: HistoryStorage {
     }
     
     func getFullHistory(completion: @escaping ([Message]) -> ()) {
-        SQLiteHistoryStorage.queryQueue.sync { [weak self] in
+        SQLiteHistoryStorage.queryQueue.async { [weak self] in
             guard let `self` = self else {
                 return
             }
@@ -150,7 +150,7 @@ final class SQLiteHistoryStorage: HistoryStorage {
                     }
                 }
                 
-                completionHandlerQueue.async {
+                self.completionHandlerQueue.async {
                     completion(messages as [Message])
                 }
             } catch {
@@ -162,7 +162,7 @@ final class SQLiteHistoryStorage: HistoryStorage {
     
     func getLatestHistory(byLimit limitOfMessages: Int,
                           completion: @escaping ([Message]) -> ()) {
-        SQLiteHistoryStorage.queryQueue.sync { [weak self] in
+        SQLiteHistoryStorage.queryQueue.async { [weak self] in
             guard let `self` = self else {
                 return
             }
@@ -191,7 +191,7 @@ final class SQLiteHistoryStorage: HistoryStorage {
                 }
                 
                 messages = messages.reversed()
-                completionHandlerQueue.async {
+                self.completionHandlerQueue.async {
                     completion(messages as [Message])
                 }
             } catch {
@@ -204,7 +204,7 @@ final class SQLiteHistoryStorage: HistoryStorage {
     func getHistoryBefore(id: HistoryID,
                           limitOfMessages: Int,
                           completion: @escaping ([Message]) -> ()) {
-        SQLiteHistoryStorage.queryQueue.sync { [weak self] in
+        SQLiteHistoryStorage.queryQueue.async { [weak self] in
             guard let `self` = self else {
                 return
             }
@@ -237,7 +237,7 @@ final class SQLiteHistoryStorage: HistoryStorage {
                 }
                 
                 messages = messages.reversed()
-                completionHandlerQueue.async {
+                self.completionHandlerQueue.async {
                     completion(messages as [Message])
                 }
             } catch {
@@ -249,7 +249,7 @@ final class SQLiteHistoryStorage: HistoryStorage {
     
     func receiveHistoryBefore(messages: [MessageImpl],
                               hasMoreMessages: Bool) {
-        SQLiteHistoryStorage.queryQueue.sync { [weak self] in
+        SQLiteHistoryStorage.queryQueue.async { [weak self] in
             guard let `self` = self else {
                 return
             }
@@ -491,6 +491,7 @@ final class SQLiteHistoryStorage: HistoryStorage {
             WebimInternalLogger.shared.log(entry: "\($0)",
                 verbosityLevel: .DEBUG)
         }
+        createIndex()
     }
     
     private func createIndex() {
@@ -512,8 +513,6 @@ final class SQLiteHistoryStorage: HistoryStorage {
             WebimInternalLogger.shared.log(entry: "\($0)",
                 verbosityLevel: .DEBUG)
         }
-        
-        createIndex()
     }
     
     private func prepare() {
@@ -574,8 +573,20 @@ final class SQLiteHistoryStorage: HistoryStorage {
                                                              text: rawText)
         }
         
+        var keyboard: Keyboard? = nil
+        if let data = data {
+            keyboard = KeyboardImpl.getKeyboard(jsonDictionary: data)
+        }
+        
+        var keyboardRequest: KeyboardRequest? = nil
+        if let data = data {
+            keyboardRequest = KeyboardRequestImpl.getKeyboardRequest(jsonDictionary: data)
+        }
+        
         return MessageImpl(serverURLString: serverURLString,
                            id: (clientSideID ?? id),
+                           keyboard: keyboard,
+                           keyboardRequest: keyboardRequest,
                            operatorID: row[SQLiteHistoryStorage.senderID],
                            senderAvatarURLString: row[SQLiteHistoryStorage.avatarURLString],
                            senderName: row[SQLiteHistoryStorage.senderName],

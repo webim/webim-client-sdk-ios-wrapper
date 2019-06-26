@@ -330,7 +330,7 @@ extension MessageStreamImpl: MessageStream {
     
     func rateOperatorWith(id: String?,
                           byRating rating: Int,
-                          comletionHandler: RateOperatorCompletionHandler?) throws {
+                          completionHandler: RateOperatorCompletionHandler?) throws {
         guard rating >= 1,
             rating <= 5 else {
             WebimInternalLogger.shared.log(entry: "Rating must be within from 1 to 5 range. Passed value: \(rating)",
@@ -343,7 +343,7 @@ extension MessageStreamImpl: MessageStream {
         
         webimActions.rateOperatorWith(id: id,
                                       rating: (rating - 3), // Accepted range: (-2, -1, 0, 1, 2).
-                                      completionHandler: comletionHandler)
+                                      completionHandler: completionHandler)
     }
     
     func respondSentryCall(id: String) throws {
@@ -458,6 +458,22 @@ extension MessageStreamImpl: MessageStream {
                                                                               messageHolder: messageHolder))
         
         return messageID
+    }
+    
+    func sendKeyboardRequest(button: KeyboardButton,
+                             message: Message,
+                             completionHandler: SendKeyboardRequestCompletionHandler?) throws {
+        try accessChecker.checkAccess()
+        
+        webimActions.sendKeyboardRequest(buttonId: button.getID(),
+                                         messageId: message.getID(),
+                                         completionHandler: completionHandler)
+    }
+    
+    func updateWidgetStatus(data: String) throws {
+        try accessChecker.checkAccess()
+        
+        webimActions.updateWidgetStatusWith(data: data)
     }
     
     func edit(message: Message, text: String, completionHandler: EditMessageCompletionHandler?) throws -> Bool {
