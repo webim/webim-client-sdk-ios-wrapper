@@ -241,11 +241,11 @@ enum _ObjCMessageType: Int {
     case FILE_FROM_OPERATOR
     case FILE_FROM_VISITOR
     case INFO
-    case KEYBOARD
-    case KEYBOARD_RESPONSE
     case OPERATOR
     case OPERATOR_BUSY
     case VISITOR
+    case KEYBOARD
+    case KEYBOARD_RESPONSE
 }
 
 // MARK: - MessageSendStatus
