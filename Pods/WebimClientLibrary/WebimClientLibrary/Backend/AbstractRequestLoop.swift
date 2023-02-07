@@ -25,6 +25,7 @@
 //
 
 import Foundation
+import UIKit
 
 /**
  Class that handles HTTP-request sending by SDK.
@@ -58,6 +59,14 @@ class AbstractRequestLoop {
     var paused = true
     var running = true
     private var currentDataTask: URLSessionDataTask?
+    let completionHandlerExecutor: ExecIfNotDestroyedHandlerExecutor?
+    let internalErrorListener: InternalErrorListener?
+    
+    init(completionHandlerExecutor: ExecIfNotDestroyedHandlerExecutor?,
+         internalErrorListener: InternalErrorListener?) {
+        self.completionHandlerExecutor = completionHandlerExecutor
+        self.internalErrorListener = internalErrorListener
+    }
     
     // MARK: - Methods
     
@@ -92,8 +101,8 @@ class AbstractRequestLoop {
     }
     
     func perform(request: URLRequest) throws -> Data {
-        var requestWithUesrAngent = request
-        requestWithUesrAngent.setValue("iOS: Webim-Client 3.25.1; (\(UIDevice.current.model); \(UIDevice.current.systemVersion)); Bundle ID and version: \(Bundle.main.bundleIdentifier ?? "none") \(Bundle.main.infoDictionary?["CFBundleVersion"] ?? "none")", forHTTPHeaderField: "User-Agent")
+        var requestWithUserAgent = request
+        requestWithUserAgent.setValue("iOS: Webim-Client 3.38.0; (\(UIDevice.current.model); \(UIDevice.current.systemVersion)); Bundle ID and version: \(Bundle.main.bundleIdentifier ?? "none") \(Bundle.main.infoDictionary?["CFBundleVersion"] ?? "none")", forHTTPHeaderField: "User-Agent")
         
         var errorCounter = 0
         var lastHTTPCode = -1
@@ -105,34 +114,36 @@ class AbstractRequestLoop {
             let semaphore = DispatchSemaphore(value: 0)
             var receivedData: Data? = nil
             
-            log(request: requestWithUesrAngent)
+            log(request: requestWithUserAgent)
             
-            let dataTask = URLSession.shared.dataTask(with: requestWithUesrAngent) { [weak self] data, response, error in
+            let dataTask = URLSession.shared.dataTask(with: requestWithUserAgent) { [weak self] data, response, error in
                 guard let `self` = `self` else {
                     return
                 }
                 
-                if let response = response {
-                    httpCode = (response as! HTTPURLResponse).statusCode
+                if let response = response,
+                    let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                    httpCode = statusCode
                 }
                 
-                if error != nil {
+                let webimLoggerEntry = self.configureLogMessage(
+                    type: "response",
+                    url: requestWithUserAgent.url,
+                    parameters: requestWithUserAgent.httpBody,
+                    code: httpCode,
+                    data: data,
+                    error: error
+                )
+                
+                if let error = error {
                     semaphore.signal()
                     
-                    // Error log.
-                    var webimLoggerEntry = "Webim response:\n"
-                        + "URL – " + requestWithUesrAngent.url!.absoluteString
-                    if let httpBody = requestWithUesrAngent.httpBody {
-                        if let dataString = String(data: httpBody,
-                                                   encoding: .utf8) {
-                            webimLoggerEntry += ("\nParameters – " + dataString)
-                        }
-                    }
-                    webimLoggerEntry += "\nHTTP code – " + String(httpCode)
-                    webimLoggerEntry += "\nError – " + error!.localizedDescription
-                    WebimInternalLogger.shared.log(entry: webimLoggerEntry)
+                    WebimInternalLogger.shared.log(
+                        entry: webimLoggerEntry,
+                        logType: .networkRequest)
                     
-                    if let error = error as NSError?, !(error.domain == NSURLErrorDomain && error.code == NSURLErrorNotConnectedToInternet) {
+                    if let error = error as NSError?,
+                        !(error.domain == NSURLErrorDomain && error.code == NSURLErrorNotConnectedToInternet) {
                         return
                     }
                 }
@@ -140,17 +151,10 @@ class AbstractRequestLoop {
                 if let data = data {
                     receivedData = data
                     
-                    var webimLoggerEntry = "Webim response:\n"
-                        + "URL – " + requestWithUesrAngent.url!.absoluteString
-                    if let httpBody = requestWithUesrAngent.httpBody {
-                        if let dataString = String(data: httpBody,
-                                                   encoding: .utf8) {
-                            webimLoggerEntry += ("\nParameters – " + dataString)
-                        }
-                    }
-                    webimLoggerEntry += "\nHTTP code – " + String(httpCode)
-                    webimLoggerEntry += self.encode(responseData: data)
-                    WebimInternalLogger.shared.log(entry: webimLoggerEntry, verbosityLevel: .DEBUG)
+                    WebimInternalLogger.shared.log(
+                        entry: webimLoggerEntry,
+                        verbosityLevel: .debug,
+                        logType: .networkRequest)
                 }
                 
                 semaphore.signal()
@@ -167,32 +171,35 @@ class AbstractRequestLoop {
             }
             
             if httpCode == 0 {
-                usleep(useconds_t(10_000_000.0))
+                if let handler = self.completionHandlerExecutor {
+                    handler.execute(task: DispatchWorkItem {
+                        self.internalErrorListener?.onNotFatal(error: .noNetworkConnection)
+                        self.internalErrorListener?.connectionStateChanged(connected: false)
+                    })
+                    usleep(useconds_t(10_000_000.0))
+                } else {
+                    throw UnknownError.serverError
+                }
                 continue
             }
             
             if let receivedData = receivedData,
-                httpCode == 200 {
+                (httpCode == 200 || httpCode == 403 || httpCode == 413 || httpCode == 415) {
+                self.internalErrorListener?.connectionStateChanged(connected: true)
                 return receivedData
             }
             
-            if httpCode == 413 { // Request Entity Too Large
-                throw SendFileError.FILE_SIZE_EXCEEDED
-            }
-            if httpCode == 415 { // Unsupported Media Type
-                throw SendFileError.FILE_TYPE_NOT_ALLOWED
-            }
-            
             if httpCode == lastHTTPCode {
-                var parametersString: String?
-                if let httpBody = requestWithUesrAngent.httpBody {
-                    parametersString = String(data: httpBody,
-                                              encoding: .utf8)
-                }
-                WebimInternalLogger.shared.log(entry: "Request \(requestWithUesrAngent.url!.absoluteString)"
-                    + "\(parametersString ?? "") "
-                    + "failed with HTTP code: \(httpCode).",
-                    verbosityLevel: .WARNING)
+                let webimLoggerEntry = self.configureLogMessage(
+                    type: "Request failed",
+                    url: requestWithUserAgent.url,
+                    parameters: requestWithUserAgent.httpBody,
+                    code: httpCode
+                )
+                WebimInternalLogger.shared.log(
+                    entry: webimLoggerEntry,
+                    verbosityLevel: .warning,
+                    logType: .networkRequest)
             }
             
             errorCounter += 1
@@ -200,8 +207,11 @@ class AbstractRequestLoop {
             lastHTTPCode = httpCode
             
             // If request wasn't successful and error isn't fatal, wait some time and try again.
-            if (errorCounter >= 5) {
+            if (errorCounter > 4) {
                 // If there was more that five tries stop trying.
+                self.completionHandlerExecutor?.execute(task: DispatchWorkItem {
+                    self.internalErrorListener?.onNotFatal(error: .serverIsNotAvailable)
+                })
                 throw UnknownError.serverError
             }
             let sleepTime = Double(errorCounter) as TimeInterval
@@ -218,15 +228,40 @@ class AbstractRequestLoop {
     func handleRequestLoop(error: UnknownError) {
         switch error {
         case .interrupted:
-            WebimInternalLogger.shared.log(entry: "Request interrupted (it's OK if WebimSession object was destroyed).",
-                                           verbosityLevel: .DEBUG)
+            WebimInternalLogger.shared.log(
+                entry: "Request interrupted (it's OK if WebimSession object was destroyed).",
+                verbosityLevel: .debug,
+                logType: .networkRequest)
             
             break
         case .serverError:
-            WebimInternalLogger.shared.log(entry: "Request failed with server error.")
+            WebimInternalLogger.shared.log(
+                entry: "Request failed with server error.",
+                logType: .networkRequest)
             
             break
         }
+    }
+
+    func decodeToServerSideSettings(data: Data) throws -> WebimServerSideSettings  {
+        let readyData = prepareServerSideData(rawData: data)
+        let webimServerSideSettings = try JSONDecoder().decode(WebimServerSideSettings.self, from: readyData)
+        return webimServerSideSettings
+    }
+
+    func prepareServerSideData(rawData: Data) -> Data {
+        guard var rawDataString = String(data: rawData, encoding: .utf8),
+              rawDataString.count >= 31 else {
+            return Data()
+        }
+
+        rawDataString.removeFirst(29)
+        rawDataString.removeLast(2)
+
+        guard let newData = rawDataString.data(using: .utf8, allowLossyConversion: false) else {
+            return Data()
+        }
+        return newData
     }
     
     // MARK: Private methods
@@ -240,18 +275,59 @@ class AbstractRequestLoop {
     }
     
     private func log(request: URLRequest) {
-        var webimLoggerEntry = "Webim request:\n"
-        webimLoggerEntry += ("HTTP method - " + request.httpMethod! + "\n")
-        webimLoggerEntry += ("URL – " + request.url!.absoluteString)
-        if let httpBody = request.httpBody {
-            if let dataString = String(data: httpBody,
-                                       encoding: .utf8) {
-                webimLoggerEntry += ("\nParameters – " + dataString)
+        let webimLoggerEntry = configureLogMessage(type: "request",
+                                                   method: request.httpMethod,
+                                                   url: request.url,
+                                                   parameters: request.httpBody)
+        
+        WebimInternalLogger.shared.log(
+            entry: webimLoggerEntry,
+            verbosityLevel: .info,
+            logType: .networkRequest)
+    }
+    
+    static var logRequestData = true
+    
+    private func configureLogMessage(type: String,
+                                     method: String? = nil,
+                                     url: URL? = nil,
+                                     parameters: Data? = nil,
+                                     code: Int? = nil,
+                                     data: Data? = nil,
+                                     error: Error? = nil) -> String {
+        if !AbstractRequestLoop.logRequestData {
+            return ""
+        }
+        var logMessage = "Webim \(type):"
+        
+        if let method = method {
+            logMessage += ("\nHTTP method - \(method)")
+        }
+        
+        if let url = url {
+            logMessage += "\nURL – \(url.absoluteString)"
+        }
+        
+        if let parameters = parameters {
+            if let parametersString = String(data: parameters,
+                                             encoding: .utf8) {
+                logMessage += "\nParameters – \(parametersString)"
             }
         }
         
-        WebimInternalLogger.shared.log(entry: webimLoggerEntry,
-                                       verbosityLevel: .INFO)
+        if let code = code {
+            logMessage += "\nHTTP code – \(code)"
+        }
+        
+        if let data = data {
+            logMessage += self.encode(responseData: data)
+        }
+        
+        if let error = error {
+            logMessage += "\nError – \(error.localizedDescription)"
+        }
+        
+        return logMessage
     }
     
     private func encode(responseData: Data) -> String {

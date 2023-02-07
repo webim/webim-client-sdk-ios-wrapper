@@ -46,15 +46,19 @@ final class _ObjCWebimRemoteNotification: NSObject {
     @objc(getType)
     func getType() -> _ObjCNotificationType {
         switch webimRemoteNotification.getType() {
-        case .CONTACT_INFORMATION_REQUEST:
+        case .contactInformationRequest:
             return .CONTACT_INFORMATION_REQUEST
-        case .OPERATOR_ACCEPTED:
+        case .operatorAccepted:
             return .OPERATOR_ACCEPTED
-        case .OPERATOR_FILE:
+        case .operatorFile:
             return .OPERATOR_FILE
-        case .OPERATOR_MESSAGE:
+        case .operatorMessage:
             return .OPERATOR_MESSAGE
-        case .WIDGET:
+        case .widget:
+            return .WIDGET
+        case .rateOperator:
+            return .RATE_OPERATOR
+        case .none:
             return .WIDGET
         }
     }
@@ -63,9 +67,9 @@ final class _ObjCWebimRemoteNotification: NSObject {
     func getEvent() -> _ObjCNotificationEvent {
         if let event = webimRemoteNotification.getEvent() {
             switch event {
-            case .ADD:
+            case .add:
                 return .ADD
-            case .DELETE:
+            case .delete:
                 return .DELETE
             }
         }
@@ -89,6 +93,7 @@ enum _ObjCNotificationType: Int {
     case OPERATOR_FILE
     case OPERATOR_MESSAGE
     case WIDGET
+    case RATE_OPERATOR
 }
 
 // MARK: - NotificationEvent

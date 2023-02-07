@@ -35,12 +35,12 @@ import Foundation
 class RemoteHistoryProvider {
     
     // MARK: - Properties
-    private var webimActions: WebimActions
+    private var webimActions: WebimActionsImpl
     private var historyMessageMapper: MessageMapper
     private var historyMetaInformationStorage: HistoryMetaInformationStorage
     
     // MARK: - Initialization
-    init(webimActions: WebimActions,
+    init(webimActions: WebimActionsImpl,
          historyMessageMapper: MessageMapper,
          historyMetaInformationStorage: HistoryMetaInformationStorage) {
         self.webimActions = webimActions
@@ -52,14 +52,14 @@ class RemoteHistoryProvider {
     func requestHistory(beforeTimestamp: Int64,
                         completion: @escaping ([MessageImpl], Bool) -> ()) {
         webimActions.requestHistory(beforeMessageTimestamp: beforeTimestamp) { [weak self] data in
-            guard data != nil,
-                let `self` = self else {
+            guard let `self` = self,
+                let data = data else {
                 completion([MessageImpl](), false)
                 
                 return
             }
             
-            let json = try? JSONSerialization.jsonObject(with: data!,
+            let json = try? JSONSerialization.jsonObject(with: data,
                                                          options: [])
             if let historyBeforeResponseDictionary = json as? [String: Any?] {
                 let historyBeforeResponse = HistoryBeforeResponse(jsonDictionary: historyBeforeResponseDictionary)

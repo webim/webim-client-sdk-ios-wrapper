@@ -41,25 +41,36 @@ final class MessageToSend: MessageImpl {
          senderName: String,
          type: MessageType,
          text: String,
-         timeInMicrosecond: Int64) {
+         timeInMicrosecond: Int64,
+         data: MessageData? = nil,
+         quote: Quote? = nil,
+         sticker: Sticker? = nil) {
         super.init(serverURLString: serverURLString,
                    id: id,
+                   serverSideID: nil,
                    keyboard: nil,
                    keyboardRequest: nil,
                    operatorID: nil,
+                   quote: quote,
                    senderAvatarURLString: nil,
                    senderName: senderName,
-                   sendStatus: .SENDING,
+                   sendStatus: .sending,
+                   sticker: sticker,
                    type: type,
-                   data: nil,
+                   rawData: nil,
+                   data: data,
                    text: text,
                    timeInMicrosecond: timeInMicrosecond,
-                   attachment: nil,
                    historyMessage: false,
                    internalID: nil,
                    rawText: nil,
                    read: false,
-                   messageCanBeEdited: false)
+                   messageCanBeEdited: false,
+                   messageCanBeReplied: false,
+                   messageIsEdited: false,
+                   visitorReactionInfo: nil,
+                   visitorCanReact: false,
+                   visitorChangeReaction: false)
     }
     
 }

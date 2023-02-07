@@ -46,7 +46,7 @@ final class _ObjCMessage: NSObject {
     
     @objc(getAttachment)
     func getAttachment() -> _ObjCMessageAttachment? {
-        if let attachment = message.getAttachment() {
+        if let attachment = message.getData()?.getAttachment() {
             return _ObjCMessageAttachment(messageAttachment: attachment)
         }
         
@@ -55,7 +55,7 @@ final class _ObjCMessage: NSObject {
     
     @objc(getData)
     func getData() -> [String: Any]? {
-        if let data = message.getData() {
+        if let data = message.getRawData() {
             var objCData = [String: Any]()
             for key in data.keys {
                 if let value = data[key] {
@@ -74,9 +74,43 @@ final class _ObjCMessage: NSObject {
         return message.getID()
     }
     
+    @objc(getServerSideID)
+    func getServerSideID() -> String? {
+        return message.getServerSideID()
+    }
+    
+    @objc(getCurrentChatID)
+    func getCurrentChatID() -> String? {
+        return message.getCurrentChatID()
+    }
+    
+    @objc(getKeyboard)
+    func getKeyboard() -> _ObjCKeyboard? {
+        if let keyboard = message.getKeyboard() {
+            return _ObjCKeyboard(keyboard: keyboard)
+        }
+        return nil
+    }
+    
+    @objc(getKeyboardRequest)
+    func getKeyboardRequest() -> _ObjCKeyboardRequest? {
+        if let keyboardRequest = message.getKeyboardRequest() {
+            return _ObjCKeyboardRequest(keyboardRequest: keyboardRequest)
+        }
+        return nil
+    }
+    
     @objc(getOperatorID)
     func getOperatorID() -> String? {
         return message.getOperatorID()
+    }
+    
+    @objc(getQuote)
+    func getQuote() -> _ObjCQuote? {
+        if let quote = message.getQuote() {
+            return _ObjCQuote(quote: quote)
+        }
+        return nil
     }
     
     @objc(getSenderAvatarFullURL)
@@ -92,9 +126,9 @@ final class _ObjCMessage: NSObject {
     @objc(getSendStatus)
     func getSendStatus() -> _ObjCMessageSendStatus {
         switch message.getSendStatus() {
-        case .SENDING:
+        case .sending:
             return .SENDING
-        case .SENT:
+        case .sent:
             return .SENT
         }
     }
@@ -112,26 +146,28 @@ final class _ObjCMessage: NSObject {
     @objc(getType)
     func getType() -> _ObjCMessageType {
         switch message.getType() {
-        case .ACTION_REQUEST:
+        case .actionRequest:
             return .ACTION_REQUEST
-        case .CONTACTS_REQUEST:
+        case .contactInformationRequest:
             return .CONTACTS_REQUEST
-        case .FILE_FROM_OPERATOR:
+        case .fileFromOperator:
             return .FILE_FROM_OPERATOR
-        case .FILE_FROM_VISITOR:
+        case .fileFromVisitor:
             return .FILE_FROM_VISITOR
-        case .INFO:
+        case .info:
             return .INFO
-        case .OPERATOR:
+        case .operatorMessage:
             return .OPERATOR
-        case .OPERATOR_BUSY:
+        case .operatorBusy:
             return .OPERATOR_BUSY
-        case .VISITOR:
+        case .visitorMessage:
             return .VISITOR
-        case .KEYBOARD:
+        case .keyboard:
             return .KEYBOARD
-        case .KEYBOARD_RESPONSE:
+        case .keyboardResponse:
             return .KEYBOARD_RESPONSE
+        case .stickerVisitor:
+            return .STICKER
         }
     }
     
@@ -148,6 +184,16 @@ final class _ObjCMessage: NSObject {
     @objc(canBeEdited)
     func canBeEdited() -> Bool {
         return message.canBeEdited()
+    }
+    
+    @objc(canBeReplied)
+    func canBeReplied() -> Bool {
+        return message.canBeReplied()
+    }
+    
+    @objc(isEdited)
+    func isEdited() -> Bool {
+        return message.isEdited()
     }
     
 }
@@ -170,17 +216,17 @@ final class _ObjCMessageAttachment: NSObject {
     
     @objc(getContentType)
     func getContentType() -> String {
-        return messageAttachment.getContentType()
+        return messageAttachment.getFileInfo().getContentType() ?? ""
     }
     
     @objc(getFileName)
     func getFileName() -> String {
-        return messageAttachment.getFileName()
+        return messageAttachment.getFileInfo().getFileName()
     }
     
     @objc(getImageInfo)
     func getImageInfo() -> _ObjCImageInfo? {
-        if let imageInfo = messageAttachment.getImageInfo() {
+        if let imageInfo = messageAttachment.getFileInfo().getImageInfo() {
             return _ObjCImageInfo(imageInfo: imageInfo)
         }
         
@@ -189,12 +235,12 @@ final class _ObjCMessageAttachment: NSObject {
     
     @objc(getSize)
     func getSize() -> NSNumber? {
-        return messageAttachment.getSize() as NSNumber?
+        return messageAttachment.getFileInfo().getSize() as NSNumber?
     }
     
     @objc(getURL)
     func getURL() -> URL {
-        return messageAttachment.getURL()
+        return messageAttachment.getFileInfo().getURL() ?? URL(fileURLWithPath: "")
     }
     
 }
@@ -232,6 +278,265 @@ final class _ObjCImageInfo: NSObject {
     
 }
 
+@objc(Keyboard)
+final class _ObjCKeyboard: NSObject {
+    
+    // MARK: - Properties
+    private let keyboard: Keyboard
+    
+    
+    // MARK: - Initialization
+    init(keyboard: Keyboard) {
+        self.keyboard = keyboard
+    }
+    
+    // MARK: - Methods
+    @objc(getButtons)
+    func getButtons() -> [[_ObjCKeyboardButton]] {
+        var _objCButtons = [_ObjCKeyboardButton]()
+        for buttons in keyboard.getButtons() {
+            for button in buttons {
+                _objCButtons.append(_ObjCKeyboardButton(keyboardButton: button))
+            }
+        }
+        var array = [[_ObjCKeyboardButton]]()
+        array.append(_objCButtons)
+        return array
+    }
+    
+    @objc(getState)
+    func getState() -> _ObjCKeyboardState {
+        switch keyboard.getState() {
+        case .pending:
+            return .PENDING
+        case .completed:
+            return .COMPLETED
+        case .canceled:
+            return .CANCELED
+        }
+    }
+    
+    @objc(getResponse)
+    func getResponse() -> _ObjCKeyboardResponse? {
+        if let response = keyboard.getResponse() {
+            return _ObjCKeyboardResponse(keyboardResponse: response)
+        }
+        return nil
+    }
+}
+
+@objc(KeyboardButton)
+final class _ObjCKeyboardButton: NSObject {
+    
+    // MARK: - Properties
+    private (set) var keyboardButton: KeyboardButton
+    
+    
+    // MARK: - Initialization
+    init(keyboardButton: KeyboardButton) {
+        self.keyboardButton = keyboardButton
+    }
+    
+    // MARK: - Methods
+    @objc(getID)
+    func getID() -> String {
+        return keyboardButton.getID()
+    }
+    
+    @objc(getText)
+    func getText() -> String {
+        return keyboardButton.getText()
+    }
+    
+    @objc(getConfiguration)
+    func getConfiguration() -> _ObjCConfiguration? {
+        if let configuration = keyboardButton.getConfiguration() {
+            return _ObjCConfiguration(configuration: configuration)
+        }
+        return nil
+    }
+}
+
+@objc(Configuration)
+final class _ObjCConfiguration: NSObject {
+    
+    // MARK: - Properties
+    private let configuration: Configuration
+    
+    
+    // MARK: - Initialization
+    init(configuration: Configuration) {
+        self.configuration = configuration
+    }
+    
+    // MARK: - Methods
+    @objc(getData)
+    func getData() -> String {
+        return configuration.getData()
+    }
+    
+    @objc(isActive)
+    func isActive() -> Bool {
+        return configuration.isActive()
+    }
+    
+    @objc(getState)
+    func getState() -> _ObjCButtonState {
+        switch configuration.getState() {
+        case .showing:
+            return .SHOWING
+        case .showingSelected:
+            return .SHOWING_SELECTED
+        case .hidden:
+            return .HIDDEN
+        }
+    }
+    
+    @objc(getButtonType)
+    func getButtonType() -> _ObjCButtonType {
+        switch configuration.getButtonType() {
+        case .url:
+            return .URL
+        case .insert:
+            return .INSERT
+        }
+    }
+}
+
+@objc(KeyboardResponse)
+final class _ObjCKeyboardResponse: NSObject {
+    
+    // MARK: - Properties
+    private let keyboardResponse: KeyboardResponse
+    
+    
+    // MARK: - Initialization
+    init(keyboardResponse: KeyboardResponse) {
+        self.keyboardResponse = keyboardResponse
+    }
+    
+    // MARK: - Methods
+    @objc(getButtonID)
+    func getButtonID() -> String {
+        return keyboardResponse.getButtonID()
+    }
+    
+    @objc(getMessageID)
+    func getMessageID() -> String {
+        return keyboardResponse.getMessageID()
+    }
+}
+
+@objc(KeyboardRequest)
+final class _ObjCKeyboardRequest: NSObject {
+    
+    // MARK: - Properties
+    private let keyboardRequest: KeyboardRequest
+    
+    
+    // MARK: - Initialization
+    init(keyboardRequest: KeyboardRequest) {
+        self.keyboardRequest = keyboardRequest
+    }
+    
+    // MARK: - Methods
+    @objc(getMessageID)
+    func getMessageID() -> String {
+        return keyboardRequest.getMessageID()
+    }
+    
+    @objc(getButton)
+    func getButton() -> _ObjCKeyboardButton {
+        return _ObjCKeyboardButton(keyboardButton: keyboardRequest.getButton())
+    }
+}
+
+@objc(Quote)
+final class _ObjCQuote: NSObject {
+    
+    // MARK: - Properties
+    private let quote: Quote
+    
+    
+    // MARK: - Initialization
+    init(quote: Quote) {
+        self.quote = quote
+    }
+    
+    // MARK: - Methods
+    @objc(getAuthorID)
+    func getAuthorID() -> String? {
+        return quote.getAuthorID()
+    }
+    
+    @objc(getFileInfo)
+    func getFileInfo() -> String? {
+        return quote.getAuthorID()
+    }
+    
+    @objc(getMessageTimestamp)
+    func getMessageTimestamp() -> Date? {
+        return quote.getMessageTimestamp()
+    }
+    
+    @objc(getMessageID)
+    func getMessageID() -> String? {
+        return quote.getMessageID()
+    }
+    
+    @objc(getMessageText)
+    func getMessageText() -> String? {
+        return quote.getMessageText()
+    }
+    
+    @objc(getMessageType)
+    func getMessageType() -> _ObjCMessageType {
+        guard let type = quote.getMessageType() else {
+            return .INFO
+        }
+        switch type {
+        case .actionRequest:
+            return .ACTION_REQUEST
+        case .contactInformationRequest:
+            return .CONTACTS_REQUEST
+        case .fileFromOperator:
+            return .FILE_FROM_OPERATOR
+        case .fileFromVisitor:
+            return .FILE_FROM_VISITOR
+        case .info:
+            return .INFO
+        case .operatorMessage:
+            return .OPERATOR
+        case .operatorBusy:
+            return .OPERATOR_BUSY
+        case .visitorMessage:
+            return .VISITOR
+        case .keyboard:
+            return .KEYBOARD
+        case .keyboardResponse:
+            return .KEYBOARD_RESPONSE
+        case .stickerVisitor:
+            return .STICKER
+        }
+    }
+    
+    @objc(getSenderName)
+    func getSenderName() -> String? {
+        return quote.getSenderName()
+    }
+    
+    @objc(getState)
+    func getState() -> _ObjCQuoteState {
+        switch quote.getState() {
+        case .pending:
+            return .PENDING
+        case .filled:
+            return .FILLED
+        case .notFound:
+            return .NOT_FOUND
+        }
+    }
+}
 
 // MARK: - MessageType
 @objc(MessageType)
@@ -246,6 +551,7 @@ enum _ObjCMessageType: Int {
     case OPERATOR
     case OPERATOR_BUSY
     case VISITOR
+    case STICKER
 }
 
 // MARK: - MessageSendStatus
@@ -253,4 +559,34 @@ enum _ObjCMessageType: Int {
 enum _ObjCMessageSendStatus: Int {
     case SENDING
     case SENT
+}
+
+// MARK: - KeyboardState
+@objc(KeyboardState)
+enum _ObjCKeyboardState: Int {
+    case PENDING
+    case COMPLETED
+    case CANCELED
+}
+
+// MARK: - ButtonState
+@objc(ButtonState)
+enum _ObjCButtonState: Int {
+    case SHOWING
+    case SHOWING_SELECTED
+    case HIDDEN
+}
+
+// MARK: - ButtonType
+@objc(ButtonType)
+enum _ObjCButtonType: Int {
+    case URL
+    case INSERT
+}
+
+@objc(QuoteState)
+enum _ObjCQuoteState: Int {
+    case PENDING
+    case FILLED
+    case NOT_FOUND
 }

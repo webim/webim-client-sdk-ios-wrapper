@@ -44,7 +44,7 @@ struct KeyboardItem {
     
     // MARK: - Properties
     private let buttons: [[KeyboardButtonItem]]
-    private let state: KeyboardState
+    var state: KeyboardState
     private var response: KeyboardResponseItem?
     
     // MARK: - Initialization
@@ -54,7 +54,11 @@ struct KeyboardItem {
             for buttonArray in data {
                 var newButtonArray = [KeyboardButtonItem]()
                 for button in buttonArray {
-                    newButtonArray.append(KeyboardButtonItem(jsonDictionary: button)!)
+                    guard let buttonItem = KeyboardButtonItem(jsonDictionary: button) else {
+                        WebimInternalLogger.shared.log(entry: "Getting KeyboardButtonItem from json failure in KeyboardItem.\(#function)")
+                        return nil
+                    }
+                    newButtonArray.append(buttonItem)
                 }
                 buttonArrayArray.append(newButtonArray)
             }
@@ -66,11 +70,11 @@ struct KeyboardItem {
         if let state = jsonDictionary[JSONField.state.rawValue] as? String {
             switch state {
             case "pending":
-                self.state = .PENDING
+                self.state = .pending
             case "completed":
-                self.state = .COMPLETED
+                self.state = .completed
             default:
-                self.state = .CANCELLED
+                self.state = .canceled
             }
         } else {
             return nil
@@ -109,11 +113,13 @@ struct KeyboardButtonItem {
     private enum JSONField: String {
         case id = "id"
         case text = "text"
+        case config = "config"
     }
     
     // MARK: - Properties
     private let id: String?
     private let text: String?
+    private var config: ConfigurationItem?
     
     // MARK: - Initialization
     init?(jsonDictionary: [String: Any?]) {
@@ -128,17 +134,34 @@ struct KeyboardButtonItem {
         } else {
             return nil
         }
+        
+        if let config = jsonDictionary[JSONField.config.rawValue] as? [String: Any?] {
+            self.config = ConfigurationItem(jsonDictionary: config)
+        }
     }
     
     // MARK: - Methods
     
     func getId() -> String {
-        return id!
+        guard let id = id else {
+            WebimInternalLogger.shared.log(entry: "ID is nil in KeyboardButtonItem.\(#function)")
+            return String()
+        }
+        return id
     }
     
     func getText() -> String {
-        return text!
+        guard let text = text else {
+            WebimInternalLogger.shared.log(entry: "Text is nil in KeyboardButtonItem.\(#function)")
+            return String()
+        }
+        return text
     }
+    
+    func getConfiguration() -> ConfigurationItem? {
+        return config
+    }
+    
 }
 
 /**
@@ -178,11 +201,19 @@ struct KeyboardResponseItem {
     // MARK: - Methods
     
     func getMessageId() -> String {
-        return messageId!
+        guard let messageId = messageId else {
+            WebimInternalLogger.shared.log(entry: "Message ID is nil in KeyboardResponseItem.\(#function)")
+            return String()
+        }
+        return messageId
     }
     
     func getButtonId() -> String {
-        return buttonId!
+        guard let buttonId = buttonId else {
+            WebimInternalLogger.shared.log(entry: "Button ID is nil in KeyboardResponseItem.\(#function)")
+            return String()
+        }
+        return buttonId
     }
 }
 
@@ -225,10 +256,97 @@ struct KeyboardRequestItem {
     // MARK: - Methods
     
     func getMessageId() -> String {
-        return messageId!
+        guard let messageId = messageId else {
+            WebimInternalLogger.shared.log(entry: "Message ID is nil in KeyboardRequestItem.\(#function)")
+            return String()
+        }
+        return messageId
     }
     
     func getButton() -> KeyboardButtonItem {
-        return button!
+        guard let button = button else {
+            WebimInternalLogger.shared.log(entry: "Button is nil in KeyboardRequestItem.\(#function)")
+            fatalError("Button is nil in KeyboardRequestItem.\(#function)")
+        }
+        return button
     }
+}
+
+/**
+ - author:
+ Anna Frolova
+ - copyright:
+ 2021 Webim
+ */
+struct ConfigurationItem {
+    
+    // MARK: - Constants
+    // Raw values equal to field names received in responses from server.
+    private enum JSONField: String {
+        case active = "active"
+        case link = "link"
+        case textToInsert = "text_to_insert"
+        case state = "state"
+    }
+    
+    // MARK: - Properties
+    private var active: Bool
+    private var data: String
+    private var state: ButtonState
+    private var type: ButtonType
+    
+    // MARK: - Initialization
+    init?(jsonDictionary: [String: Any?]) {
+        if let active = jsonDictionary[JSONField.active.rawValue] as? Bool {
+            self.active = active
+        } else {
+            return nil
+        }
+        
+        if let data = jsonDictionary[JSONField.link.rawValue] as? String {
+            self.data = data
+            self.type = ButtonType.url
+        } else if let data = jsonDictionary[JSONField.textToInsert.rawValue] as? String {
+            self.data = data
+            self.type = ButtonType.insert
+        } else {
+            return nil
+        }
+        
+        if let state = jsonDictionary[JSONField.state.rawValue] as? String {
+            switch state {
+            case "showing":
+                self.state = .showing
+                
+                break
+            case "showing_selected":
+                self.state = .showingSelected
+                
+                break
+            default:
+                self.state = .hidden
+            }
+        } else {
+            return nil
+        }
+    }
+    
+    // MARK: - Methods
+    
+    func isActive() -> Bool {
+        return active
+    }
+    
+    func getData() -> String {
+        return data
+    }
+    
+    func getState() -> ButtonState {
+        return state
+    }
+    
+    func getButtonType() -> ButtonType {
+        return type
+    }
+    
 }

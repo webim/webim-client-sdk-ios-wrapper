@@ -60,4 +60,13 @@ final class _ObjCOperator: NSObject {
         return `operator`.getAvatarURL()
     }
     
+    @objc(getTitle)
+    func getTitle() -> String? {
+        return `operator`.getTitle()
+    }
+    
+    @objc(getInfo)
+    func getInfo() -> String? {
+        return `operator`.getInfo()
+    }
 }

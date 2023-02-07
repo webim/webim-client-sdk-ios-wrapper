@@ -43,7 +43,9 @@ final class WebimClientBuilder {
     private var deltaCallback: DeltaCallback?
     private var deviceID: String?
     private var deviceToken: String?
+    private var remoteNotificationSystem: Webim.RemoteNotificationSystem?
     private var internalErrorListener: InternalErrorListener?
+    private var notFatalErrorHandler: NotFatalErrorHandler?
     private var location: String?
     private var providedAuthenticationToken: String?
     private weak var providedAuthenticationTokenStateListener: ProvidedAuthorizationTokenStateListener?
@@ -141,8 +143,20 @@ final class WebimClientBuilder {
         return self
     }
     
-    func set(deviceID: String) -> WebimClientBuilder {
+    func set(remoteNotificationSystem: Webim.RemoteNotificationSystem?) -> WebimClientBuilder {
+        self.remoteNotificationSystem = remoteNotificationSystem
+        
+        return self
+    }
+    
+    func set(deviceID: String?) -> WebimClientBuilder {
         self.deviceID = deviceID
+        
+        return self
+    }
+    
+    func set(notFatalErrorHandler: NotFatalErrorHandler?) -> WebimClientBuilder {
+        self.notFatalErrorHandler = notFatalErrorHandler
         
         return self
     }
@@ -153,25 +167,57 @@ final class WebimClientBuilder {
     }
     
     func build() -> WebimClient {
-        let actionRequestLoop = ActionRequestLoop(completionHandlerExecutor: completionHandlerExecutor!,
-                                                  internalErrorListener: internalErrorListener!)
+        guard let completionHandlerExecutor = completionHandlerExecutor else {
+            WebimInternalLogger.shared.log(entry: "Building Webim client failure because Completion Handler Executor is nil in WebimClient.\(#function)")
+            fatalError("Building Webim client failure because Completion Handler Executor is nil in WebimClient.\(#function)")
+        }
+        guard let internalErrorListener = internalErrorListener else {
+            WebimInternalLogger.shared.log(entry: "Building Webim client failure because Internal Error Listener is nil in WebimClient.\(#function)")
+            fatalError("Building Webim client failure because Internal Error Listener is nil in WebimClient.\(#function)")
+        }
+        
+        let actionRequestLoop = ActionRequestLoop(completionHandlerExecutor: completionHandlerExecutor,
+                                                  internalErrorListener: internalErrorListener,
+                                                  notFatalErrorHandler: notFatalErrorHandler)
         
         actionRequestLoop.set(authorizationData: authorizationData)
         
-        let deltaRequestLoop = DeltaRequestLoop(deltaCallback: deltaCallback!,
-                                                completionHandlerExecutor: completionHandlerExecutor!,
+        guard let deltaCallback = deltaCallback else {
+            WebimInternalLogger.shared.log(entry: "Building Webim client failure because Delta Callback is nil in WebimClient.\(#function)")
+            fatalError("Building Webim client failure because Delta Callback is nil in WebimClient.\(#function)")
+        }
+        guard let baseURL = baseURL else {
+            WebimInternalLogger.shared.log(entry: "Building Webim client failure because Base URL is nil in WebimClient.\(#function)")
+            fatalError("Building Webim client failure because Base URL is nil in WebimClient.\(#function)")
+        }
+        guard let title = title else {
+            WebimInternalLogger.shared.log(entry: "Building Webim client failure because Title is nil in WebimClient.\(#function)")
+            fatalError("Building Webim client failure because Title is nil in WebimClient.\(#function)")
+        }
+        guard let location = location else {
+            WebimInternalLogger.shared.log(entry: "Building Webim client failure because Location is nil in WebimClient.\(#function)")
+            fatalError("Building Webim client failure because Location is nil in WebimClient.\(#function)")
+        }
+        guard let deviceID = deviceID else {
+            WebimInternalLogger.shared.log(entry: "Building Webim client failure because Device ID is nil in WebimClient.\(#function)")
+            fatalError("Building Webim client failure because Device ID is nil in WebimClient.\(#function)")
+        }
+        
+        let deltaRequestLoop = DeltaRequestLoop(deltaCallback: deltaCallback,
+                                                completionHandlerExecutor: completionHandlerExecutor,
                                                 sessionParametersListener: SessionParametersListenerWrapper(withSessionParametersListenerToWrap: sessionParametersListener,
                                                                                                             actionRequestLoop: actionRequestLoop),
-                                                internalErrorListener: internalErrorListener!,
-                                                baseURL: baseURL!,
-                                                title: title!,
-                                                location: location!,
+                                                internalErrorListener: internalErrorListener,
+                                                baseURL: baseURL,
+                                                title: title,
+                                                location: location,
                                                 appVersion: appVersion,
                                                 visitorFieldsJSONString: visitorFieldsJSONString,
                                                 providedAuthenticationTokenStateListener: providedAuthenticationTokenStateListener,
                                                 providedAuthenticationToken: providedAuthenticationToken,
-                                                deviceID: deviceID!,
+                                                deviceID: deviceID,
                                                 deviceToken: deviceToken,
+                                                remoteNotificationSystem: remoteNotificationSystem,
                                                 visitorJSONString: visitorJSONString,
                                                 sessionID: sessionID,
                                                 prechat: prechat,
@@ -180,7 +226,7 @@ final class WebimClientBuilder {
         
         return WebimClient(withActionRequestLoop: actionRequestLoop,
                            deltaRequestLoop: deltaRequestLoop,
-                           webimActions: WebimActions(baseURL: baseURL!,
+                           webimActions: WebimActionsImpl(baseURL: baseURL,
                                                       actionRequestLoop: actionRequestLoop))
     }
     
@@ -200,12 +246,12 @@ final class WebimClient {
     // MARK: - Properties
     private let actionRequestLoop: ActionRequestLoop
     private let deltaRequestLoop: DeltaRequestLoop
-    private let webimActions: WebimActions
+    private let webimActions: WebimActionsImpl
     
     // MARK: - Initialization
     init(withActionRequestLoop actionRequestLoop: ActionRequestLoop,
          deltaRequestLoop: DeltaRequestLoop,
-         webimActions: WebimActions) {
+         webimActions: WebimActionsImpl) {
         self.actionRequestLoop = actionRequestLoop
         self.deltaRequestLoop = deltaRequestLoop
         self.webimActions = webimActions
@@ -242,7 +288,7 @@ final class WebimClient {
         return deltaRequestLoop
     }
     
-    func getActions() -> WebimActions {
+    func getActions() -> WebimActionsImpl {
         return webimActions
     }
     

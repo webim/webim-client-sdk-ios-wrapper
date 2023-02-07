@@ -43,7 +43,7 @@ class MessageMapper {
     
     // MARK: - Properties
     private let serverURLString: String
-    private weak var webimClient: WebimClient?
+    private var fileUrlCreator: FileUrlCreator?
     
     // MARK: - Initialization
     init(withServerURLString serverURLString: String) {
@@ -55,97 +55,219 @@ class MessageMapper {
     static func convert(messageKind: MessageItem.MessageKind) -> MessageType? {
         switch messageKind {
         case .actionRequest:
-            return .ACTION_REQUEST
+            return .actionRequest
         case .contactInformationRequest:
-            return .CONTACTS_REQUEST
+            return .contactInformationRequest
         case .fileFromOperator:
-            return .FILE_FROM_OPERATOR
+            return .fileFromOperator
         case .fileFromVisitor:
-            return .FILE_FROM_VISITOR
+            return .fileFromVisitor
         case .info:
-            return .INFO
+            return .info
         case .keyboard:
-            return .KEYBOARD
-        case .keyboard_response:
-            return .KEYBOARD_RESPONSE
+            return .keyboard
+        case .keyboardResponse:
+            return .keyboardResponse
         case .operatorMessage:
-            return .OPERATOR
+            return .operatorMessage
         case .operatorBusy:
-            return .OPERATOR_BUSY
+            return .operatorBusy
         case .visitorMessage:
-            return .VISITOR
+            return .visitorMessage
+        case .stickerVisitor:
+            return .stickerVisitor
         default:
             WebimInternalLogger.shared.log(entry: "Invalid message type received: \(messageKind.rawValue)",
-                verbosityLevel: .WARNING)
-            
+                verbosityLevel: .warning)
+
             return nil
         }
     }
     
     func convert(messageItem: MessageItem,
                  historyMessage: Bool) -> MessageImpl? {
-        let kind = messageItem.getKind()
-        if (kind == nil)
-            || (kind == .contactInformation)
-            || (kind == .forOperator) {
+        guard let kind = messageItem.getKind() else {
             return nil
         }
-        let type = MessageMapper.convert(messageKind: kind!)
-        if type == nil {
+        if kind == .contactInformation || kind == .forOperator {
+            return nil
+        }
+        guard let type = MessageMapper.convert(messageKind: kind) else {
             return nil
         }
         
-        var attachment: MessageAttachment? = nil
-        var keyboard: Keyboard? = nil
-        var keyboardRequest: KeyboardRequest? = nil
-        var text: String? = nil
-        var rawText: String? = nil
+        var attachment: FileInfoImpl?
+        var attachments: [FileInfoImpl]
+        var keyboard: Keyboard?
+        var keyboardRequest: KeyboardRequest?
+        var text: String?
+        var rawText: String?
+        var data: MessageData?
+        var sticker: Sticker?
         
-        let messageItemText = messageItem.getText()
+        guard let messageItemText = messageItem.getText() else {
+            WebimInternalLogger.shared.log(entry: "Message Item Text is nil in MessageFactories.\(#function)")
+            return nil
+        }
         if (kind == .fileFromVisitor)
             || (kind == .fileFromOperator) {
-            attachment = MessageAttachmentImpl.getAttachment(byServerURL: serverURLString,
-                                                             webimClient: webimClient!,
-                                                             text: messageItemText!)
-            if attachment == nil {
+            
+            if let fileUrlCreator = fileUrlCreator {
+                attachments = FileInfoImpl.getAttachments(byFileUrlCreator: fileUrlCreator,
+                                                          text: messageItemText)
+                if attachments.isEmpty {
+                    attachment = FileInfoImpl.getAttachment(byFileUrlCreator: fileUrlCreator,
+                                                            text: messageItemText)
+                    if let attachment = attachment {
+                        attachments.append(attachment)
+                    }
+                } else {
+                    attachment = attachments.first
+                }
+                if let attachment = attachment {
+                    var file: FileItem?
+                    if let rawData = messageItem.getRawData() {
+                        file = MessageDataItem(jsonDictionary: rawData).getFile()
+                    }
+                    let state: AttachmentState
+                    switch file?.getState() {
+                    case .error:
+                        state = .error
+                        break
+                    case .externalChecks:
+                        state = .externalChecks
+                        break
+                    default:
+                        state = .ready
+                    }
+                    data = MessageDataImpl(
+                        attachment: MessageAttachmentImpl(fileInfo: attachment,
+                                                          filesInfo: attachments,
+                                                          state: state,
+                                                          errorType: file?.getErrorType(),
+                                                          errorMessage: file?.getErrorMessage())
+                    )
+                } else {
+                    if let rawData = messageItem.getRawData(),
+                       let file = MessageDataItem(jsonDictionary: rawData).getFile() {
+                        let state: AttachmentState
+                        switch file.getState() {
+                        case .error:
+                            state = .error
+                            break
+                        case .externalChecks:
+                            state = .externalChecks
+                            break
+                        default:
+                            state = .ready
+                        }
+                        let fileInfoImpl = FileInfoImpl(urlString: nil,
+                                                        size: file.getProperties()?.getSize() ?? 0,
+                                                        filename: file.getProperties()?.getFilename() ?? "",
+                                                        contentType: file.getProperties()?.getContentType() ?? "",
+                                                        guid: file.getProperties()?.getGUID() ?? "",
+                                                        fileUrlCreator: nil)
+                        attachment = fileInfoImpl
+                        attachments.append(fileInfoImpl)
+                        data = MessageDataImpl(
+                            attachment: MessageAttachmentImpl(fileInfo: fileInfoImpl,
+                                                              filesInfo: attachments,
+                                                              state: state,
+                                                              downloadProgress: file.getDownloadProgress(),
+                                                              errorType: file.getErrorType(),
+                                                              errorMessage: file.getErrorMessage()))
+                    }
+                }
+            }
+            guard let attachment = attachment else {
                 return nil
             }
             
-            text = attachment?.getFileName()
-            rawText = messageItemText!
+            text = attachment.getFileName()
+            rawText = messageItemText
         } else {
-            text = messageItemText ?? ""
+            text = messageItemText
         }
         
-        if kind == .keyboard, let data = messageItem.getData() {
+        if kind == .keyboard, let data = messageItem.getRawData() {
             keyboard = KeyboardImpl.getKeyboard(jsonDictionary: data)
         }
         
-        if kind == .keyboard_response, let data = messageItem.getData() {
+        if kind == .keyboardResponse, let data = messageItem.getRawData() {
             keyboardRequest = KeyboardRequestImpl.getKeyboardRequest(jsonDictionary: data)
         }
         
+        if kind == .stickerVisitor, let data = messageItem.getRawData() {
+            sticker = StickerImpl.getSticker(jsonDictionary: data)
+        }
+        
+        let quote = messageItem.getQuote()
+        var messageAttachmentFromQuote: FileInfo? = nil
+        if let kind = quote?.getMessageKind(), kind == .fileFromVisitor || kind == .fileFromOperator {
+            if let fileUrlCreator = fileUrlCreator {
+                guard let quoteText = quote?.getText() else {
+                    WebimInternalLogger.shared.log(entry: "Quote Text is nil in MessageFactories.\(#function)")
+                    return nil
+                }
+                messageAttachmentFromQuote = FileInfoImpl.getAttachment(byFileUrlCreator: fileUrlCreator,
+                                                                        text: quoteText)
+                if messageAttachmentFromQuote == nil {
+                    let attachments = FileInfoImpl.getAttachments(byFileUrlCreator: fileUrlCreator,
+                                                                  text: quoteText)
+                    if !attachments.isEmpty {
+                        messageAttachmentFromQuote = attachments[0]
+                    }
+                }
+            }
+        }
+        
+        
+        guard let clientSideID = messageItem.getClientSideID() else {
+            WebimInternalLogger.shared.log(entry: "Message Item has not Client Side ID in MessageFactories.\(#function)")
+            return nil
+        }
+        guard let senderName = messageItem.getSenderName() else {
+            WebimInternalLogger.shared.log(entry: "Message Item has not Sender Name in MessageFactories.\(#function)")
+            return nil
+        }
+        guard let messageText = text else {
+            WebimInternalLogger.shared.log(entry: "Message has not Text in MessageFactories.\(#function)")
+            return nil
+        }
+        guard let timeInMicrosecond = messageItem.getTimeInMicrosecond() else {
+            WebimInternalLogger.shared.log(entry: "Message Item has not Time In Microsecond in MessageFactories.\(#function)")
+            return nil
+        }
+        
         return MessageImpl(serverURLString: serverURLString,
-                           id: messageItem.getClientSideID()!,
+                           id: clientSideID,
+                           serverSideID: messageItem.getID(),
                            keyboard: keyboard,
                            keyboardRequest: keyboardRequest,
                            operatorID: messageItem.getSenderID(),
+                           quote: QuoteImpl.getQuote(quoteItem: quote, messageAttachment: messageAttachmentFromQuote),
                            senderAvatarURLString: messageItem.getSenderAvatarURLString(),
-                           senderName: messageItem.getSenderName()!,
-                           type: type!,
-                           data: messageItem.getData(),
-                           text: text!,
-                           timeInMicrosecond: messageItem.getTimeInMicrosecond()!,
-                           attachment: attachment,
+                           senderName: senderName,
+                           sticker: sticker,
+                           type: type,
+                           rawData: messageItem.getRawData(),
+                           data: data,
+                           text: messageText,
+                           timeInMicrosecond: timeInMicrosecond,
                            historyMessage: historyMessage,
                            internalID: messageItem.getID(),
                            rawText: rawText,
                            read: messageItem.getRead() ?? true,
-                           messageCanBeEdited: messageItem.getCanBeEdited())
+                           messageCanBeEdited: messageItem.getCanBeEdited(),
+                           messageCanBeReplied: messageItem.getCanBeReplied(),
+                           messageIsEdited: messageItem.getIsEdited(),
+                           visitorReactionInfo: messageItem.getReaction(),
+                           visitorCanReact: messageItem.getCanVisitorReact(),
+                           visitorChangeReaction: messageItem.getCanVisitorChangeReaction())
     }
     
-    func set(webimClient: WebimClient) {
-        self.webimClient = webimClient
+    func set(fileUrlCreator: FileUrlCreator) {
+        self.fileUrlCreator = fileUrlCreator
     }
     
     func mapAll(messages: [MessageItem]) -> [MessageImpl] {
@@ -221,18 +343,50 @@ final class SendingFactory {
         return MessageToSend(serverURLString: serverURLString,
                              id: id,
                              senderName: "",
-                             type: .VISITOR,
+                             type: .visitorMessage,
                              text: text,
                              timeInMicrosecond: InternalUtils.getCurrentTimeInMicrosecond())
     }
     
-    func createFileMessageToSendWith(id: String) -> MessageToSend {
+    func createTextMessageToSendWithQuoteWith(id: String,
+                                              text: String,
+                                              repliedMessage: Message) -> MessageToSend {
         return MessageToSend(serverURLString: serverURLString,
                              id: id,
                              senderName: "",
-                             type: .FILE_FROM_VISITOR,
+                             type: .visitorMessage,
+                             text: text,
+                             timeInMicrosecond: InternalUtils.getCurrentTimeInMicrosecond(),
+                             quote: QuoteImpl(state: QuoteState.pending,
+                                              authorID: nil,
+                                              messageAttachment: repliedMessage.getData()?.getAttachment()?.getFileInfo(),
+                                              messageID: repliedMessage.getCurrentChatID(),
+                                              messageType: repliedMessage.getType(),
+                                              senderName: repliedMessage.getSenderName(),
+                                              text: repliedMessage.getText(),
+                                              rawText: repliedMessage.getText(),
+                                              timestamp: Int64(repliedMessage.getTime().timeIntervalSince1970 * 1000)))
+    }
+
+    
+    func createFileMessageToSendWith(id: String, data: MessageData? = nil) -> MessageToSend {
+        return MessageToSend(serverURLString: serverURLString,
+                             id: id,
+                             senderName: "",
+                             type: .fileFromVisitor,
                              text: "",
-                             timeInMicrosecond: InternalUtils.getCurrentTimeInMicrosecond())
+                             timeInMicrosecond: InternalUtils.getCurrentTimeInMicrosecond(),
+                             data: data)
+    }
+    
+    func createStickerMessageToSendWith(id: String, stickerId: Int) -> MessageToSend {
+        return MessageToSend(serverURLString: serverURLString,
+                             id: id,
+                             senderName: "",
+                             type: .stickerVisitor,
+                             text: "",
+                             timeInMicrosecond: InternalUtils.getCurrentTimeInMicrosecond(),
+                             sticker: StickerImpl(stickerId: stickerId))
     }
     
 }

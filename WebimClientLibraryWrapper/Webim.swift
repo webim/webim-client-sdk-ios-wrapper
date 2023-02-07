@@ -160,9 +160,9 @@ final class _ObjCSessionBuilder: NSObject {
         var webimRemoteNotificationSystem: Webim.RemoteNotificationSystem?
         switch remoteNotificationSystem {
         case .APNS:
-            webimRemoteNotificationSystem = .APNS
+            webimRemoteNotificationSystem = .apns
         default:
-            webimRemoteNotificationSystem = .NONE
+            webimRemoteNotificationSystem = Webim.RemoteNotificationSystem.none
         }
         sessionBuilder = sessionBuilder.set(remoteNotificationSystem: webimRemoteNotificationSystem!)
         
@@ -196,15 +196,15 @@ final class _ObjCSessionBuilder: NSObject {
         var internalVerbosityLevel: SessionBuilder.WebimLoggerVerbosityLevel?
         switch verbosityLevel {
         case .VERBOSE:
-            internalVerbosityLevel = .VERBOSE
+            internalVerbosityLevel = .verbose
         case .DEBUG:
-            internalVerbosityLevel = .DEBUG
+            internalVerbosityLevel = .debug
         case .INFO:
-            internalVerbosityLevel = .INFO
+            internalVerbosityLevel = .info
         case .WARNING:
-            internalVerbosityLevel = .WARNING
+            internalVerbosityLevel = .warning
         case .ERROR:
-            internalVerbosityLevel = .ERROR
+            internalVerbosityLevel = .error
         }
         let wrapper = WebimLoggerWrapper(webimLogger: webimLogger)
         webimLoggerWrapper = wrapper
